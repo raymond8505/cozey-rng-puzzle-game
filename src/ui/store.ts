@@ -99,3 +99,9 @@ export const useGame = create<GameStore>((set, get) => {
       set((s) => ({ state: { ...s.state, board, pool: [], queue: [], held: null } })),
   };
 });
+
+// Dev-only handle so headless drivers can read game state while driving the
+// real UI. Never present in production builds.
+if (import.meta.env.DEV && typeof window !== "undefined") {
+  (window as unknown as { __pcStore?: typeof useGame }).__pcStore = useGame;
+}

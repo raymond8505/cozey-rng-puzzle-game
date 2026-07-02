@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import type { CellIndex, Piece } from "@/game/types";
 import type { GridDims } from "@/game/grid";
 import { homePiecePath, cellOffset, UNIT } from "./piecePath";
@@ -25,17 +26,26 @@ export function PieceView({ piece, cell, dims, imageHref }: PieceViewProps) {
           <path d={path} />
         </clipPath>
       </defs>
-      <g clipPath={`url(#${clipId})`}>
-        <image
-          href={imageHref}
-          x={0}
-          y={0}
-          width={boardW}
-          height={boardH}
-          preserveAspectRatio="xMidYMid slice"
-        />
-      </g>
-      <path d={path} className="piece-outline" />
+      {/* Inner group animates the settle-in on placement; the outer group keeps
+          the (static) cell translation so the two transforms don't fight. */}
+      <motion.g
+        initial={{ opacity: 0, scale: 0.82 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 340, damping: 24 }}
+        style={{ transformBox: "fill-box", transformOrigin: "center" }}
+      >
+        <g clipPath={`url(#${clipId})`}>
+          <image
+            href={imageHref}
+            x={0}
+            y={0}
+            width={boardW}
+            height={boardH}
+            preserveAspectRatio="xMidYMid slice"
+          />
+        </g>
+        <path d={path} className="piece-outline" />
+      </motion.g>
     </g>
   );
 }

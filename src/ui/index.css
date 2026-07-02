@@ -47,11 +47,11 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   min-height: 100%;
   max-width: 560px;
   margin: 0 auto;
-  padding: 1rem 0.75rem calc(1rem + env(safe-area-inset-bottom));
+  padding: 0.6rem 0.7rem calc(0.6rem + env(safe-area-inset-bottom));
 }
 
 .app-header {
@@ -80,6 +80,7 @@ button {
 /* --- board --- */
 .board-frame {
   width: 100%;
+  max-height: 42vh;
   background: var(--paper);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
@@ -138,9 +139,9 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   width: 100%;
-  padding: 0.9rem;
+  padding: 0.7rem;
   background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
@@ -153,8 +154,8 @@ button {
 }
 
 .machine-window {
-  width: 96px;
-  height: 96px;
+  width: 84px;
+  height: 84px;
   display: grid;
   place-items: center;
   background: #2c2721;
@@ -412,9 +413,9 @@ button {
 
 .card {
   position: relative;
-  width: 96px;
-  min-height: 128px;
-  padding: 0.9rem 0.55rem 0.6rem;
+  width: 88px;
+  min-height: 112px;
+  padding: 0.7rem 0.5rem 0.5rem;
   background: #f7f1e6;
   border-radius: 8px;
   border: 1px solid rgba(74, 63, 53, 0.22);

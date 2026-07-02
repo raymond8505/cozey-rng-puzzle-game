@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { useGame } from "../store";
 import { completeness, scoreTier } from "@/game/selectors";
 import { Board } from "../board/Board";
@@ -15,8 +16,20 @@ export function EndScreen() {
   const playAgain = () => restart(`play-${Date.now()}`);
 
   return (
-    <main className="app end-screen">
-      <h1 className="app-title">{slogan}</h1>
+    <motion.main
+      className="app end-screen"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      <motion.h1
+        className="app-title"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
+      >
+        {slogan}
+      </motion.h1>
       <p className="end-score">{pct}% complete</p>
 
       <div className="compare">
@@ -33,6 +46,6 @@ export function EndScreen() {
       <button className="draw-btn" onClick={playAgain}>
         Play again
       </button>
-    </main>
+    </motion.main>
   );
 }

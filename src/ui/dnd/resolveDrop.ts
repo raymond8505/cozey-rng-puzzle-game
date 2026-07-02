@@ -8,10 +8,12 @@ import { asCellIndex } from "@/game/types";
 
 export type DropTarget =
   | { readonly kind: "cell"; readonly cell: CellIndex }
-  | { readonly kind: "queue" };
+  | { readonly kind: "queue" }
+  | { readonly kind: "slot" };
 
 function parse(token: string): DropTarget | null {
   if (token === "queue") return { kind: "queue" };
+  if (token === "slot") return { kind: "slot" };
   if (token.startsWith("cell:")) {
     const n = Number(token.slice(5));
     if (Number.isInteger(n)) return { kind: "cell", cell: asCellIndex(n) };

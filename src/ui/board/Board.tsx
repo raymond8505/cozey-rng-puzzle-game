@@ -10,11 +10,19 @@ interface BoardProps {
   state: GameState;
   /** When true, empty cells become drag-drop targets (data-drop="cell:i"). */
   dropActive?: boolean;
+  /** When true, placed cells become clickable crowbar lift targets. */
+  liftActive?: boolean;
+  onLiftCell?: (cell: number) => void;
 }
 
 /** The jigsaw board: a single source image revealed piece-by-piece as cells
  *  fill. Scales to any cols×rows via viewBox — no pixel constants. */
-export function Board({ state, dropActive = false }: BoardProps) {
+export function Board({
+  state,
+  dropActive = false,
+  liftActive = false,
+  onLiftCell,
+}: BoardProps) {
   const dims = gridDims(state);
   const boardW = dims.cols * UNIT;
   const boardH = dims.rows * UNIT;
@@ -56,6 +64,21 @@ export function Board({ state, dropActive = false }: BoardProps) {
                 y={Math.floor(cell / dims.cols) * UNIT}
                 width={UNIT}
                 height={UNIT}
+              />
+            ),
+          )}
+
+        {liftActive &&
+          state.board.map((occupant, cell) =>
+            occupant === null ? null : (
+              <rect
+                key={`lift-${cell}`}
+                className="cell-lift"
+                x={(cell % dims.cols) * UNIT}
+                y={Math.floor(cell / dims.cols) * UNIT}
+                width={UNIT}
+                height={UNIT}
+                onClick={() => onLiftCell?.(cell)}
               />
             ),
           )}

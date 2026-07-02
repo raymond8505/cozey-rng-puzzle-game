@@ -1,10 +1,14 @@
 import { useGame } from "./store";
+import { asCellIndex } from "@/game/types";
 import { legalActions, isGameOver } from "@/game/selectors";
 import { useMachineCycle } from "./machine/useMachineCycle";
 import { Board } from "./board/Board";
 import { TargetThumbnail } from "./board/TargetThumbnail";
 import { Machine } from "./machine/Machine";
 import { Queue } from "./queue/Queue";
+import { Hand } from "./cards/Hand";
+import { Toast } from "./cards/Toast";
+import { CrowbarPrompt } from "./cards/CrowbarPrompt";
 import { RoutingTray } from "./routing/RoutingTray";
 import { EndScreen } from "./end/EndScreen";
 import { DevPanel } from "./dev/DevPanel";
@@ -12,6 +16,8 @@ import { DevPanel } from "./dev/DevPanel";
 export function GameScreen() {
   useMachineCycle();
   const state = useGame((s) => s.state);
+  const pendingCrowbar = useGame((s) => s.pendingCrowbar);
+  const playCrowbar = useGame((s) => s.playCrowbar);
 
   if (isGameOver(state)) return <EndScreen />;
 
@@ -20,9 +26,11 @@ export function GameScreen() {
   // Board cells accept drops both while routing a held piece and while
   // dragging a queued piece out for Action B.
   const dropActive = state.phase === "routing" || legalActions(state).canPlaceFromQueue;
+  const liftActive = pendingCrowbar !== null;
 
   return (
     <main className="app">
+      <Toast />
       <header className="app-header">
         <div>
           <h1 className="app-title">PUNCHCARD</h1>
@@ -33,10 +41,19 @@ export function GameScreen() {
         <TargetThumbnail />
       </header>
 
-      <Board state={state} dropActive={dropActive} />
+      <Board
+        state={state}
+        dropActive={dropActive}
+        liftActive={liftActive}
+        onLiftCell={(cell) => {
+          if (pendingCrowbar !== null) playCrowbar(pendingCrowbar, asCellIndex(cell));
+        }}
+      />
+      <CrowbarPrompt />
       <Queue />
       <RoutingTray />
       <Machine />
+      <Hand />
 
       {import.meta.env.DEV && <DevPanel />}
     </main>

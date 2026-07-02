@@ -1,14 +1,23 @@
 import { useGame } from "../store";
-import { gridDims, queueCapacity, legalActions } from "@/game/selectors";
-import { PieceSprite } from "../piece/PieceSprite";
+import { queueCapacity, legalActions } from "@/game/selectors";
+import { QueuePiece, type QueueDragMode } from "./QueuePiece";
 
-/** The parking queue: derived-capacity slots holding pieces set aside. Acts as
- *  a drop target for parking the held piece while that is legal. */
+/** The parking queue: derived-capacity slots holding pieces set aside.
+ *  - Park target for the held piece while parking is legal.
+ *  - Its pieces are draggable onto the board for Action B (place-from-queue)
+ *    or, when the queue is full during routing, to SWAP (place a queued piece
+ *    while the held piece takes its slot). */
 export function Queue() {
   const state = useGame((s) => s.state);
-  const dims = gridDims(state);
+  const la = legalActions(state);
   const capacity = queueCapacity(state);
-  const canPark = legalActions(state).canPark;
+
+  const canPark = la.canPark;
+  const mode: QueueDragMode = la.mustSwapOrPlace
+    ? "swap"
+    : la.canPlaceFromQueue
+      ? "placeFromQueue"
+      : null;
 
   const slots = Array.from({ length: capacity }, (_, i) => state.queue[i] ?? null);
 
@@ -20,9 +29,7 @@ export function Queue() {
       >
         {slots.map((piece, i) => (
           <div className="queue-slot" key={i}>
-            {piece !== null && (
-              <PieceSprite piece={state.pieces[piece]} dims={dims} className="queue-sprite" />
-            )}
+            {piece !== null && <QueuePiece piece={piece} mode={mode} />}
           </div>
         ))}
       </div>

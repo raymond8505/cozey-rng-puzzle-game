@@ -13,7 +13,7 @@ export function RoutingTray() {
     <section className="routing-tray" aria-label="Route the held piece">
       <p className="routing-hint">
         {forced
-          ? "Queue is full — drag onto the board to place."
+          ? "Queue is full — drag the new piece, or a queued one, onto the board."
           : "Drag onto the board, or into the queue to park."}
       </p>
       <HeldToken />

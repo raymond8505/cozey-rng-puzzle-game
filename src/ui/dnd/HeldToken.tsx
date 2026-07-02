@@ -3,17 +3,7 @@ import { useGame } from "../store";
 import { gridDims } from "@/game/selectors";
 import { PieceSprite } from "../piece/PieceSprite";
 import { resolveDropAt } from "./resolveDrop";
-
-function clientXY(
-  e: MouseEvent | TouchEvent | PointerEvent,
-  info: PanInfo,
-): [number, number] {
-  const pe = e as PointerEvent;
-  if (typeof pe.clientX === "number") return [pe.clientX, pe.clientY];
-  const t = (e as TouchEvent).changedTouches?.[0];
-  if (t) return [t.clientX, t.clientY];
-  return [info.point.x - window.scrollX, info.point.y - window.scrollY];
-}
+import { clientXY } from "./pointer";
 
 /** The held piece as a draggable token. Drop it on an empty board cell to
  *  place, or on the queue to park. Misses snap back (dragSnapToOrigin). */

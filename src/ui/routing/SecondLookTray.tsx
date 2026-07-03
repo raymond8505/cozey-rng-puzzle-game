@@ -5,7 +5,7 @@ import { PieceSprite } from "../piece/PieceSprite";
 /** Second Look chooser: shown in the `secondLook` phase so the player can keep
  *  a captured piece. After one draw, keep it or draw again; after the second
  *  draw, pick either (the unkept piece returns to the pool). Keeping sets the
- *  held piece and hands off to RoutingTray for place/park. */
+ *  held piece and hands off to the Machine's held bay for place/park. */
 export function SecondLookTray() {
   const state = useGame((s) => s.state);
   const dispatch = useGame((s) => s.dispatch);

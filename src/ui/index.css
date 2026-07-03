@@ -342,12 +342,19 @@ button.machine-window {
   }
 }
 
+/* row 2: transport controls at natural size | status log fills the rest */
 .machine-controls {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   justify-content: flex-start;
   width: 100%;
+}
+.machine-transport {
+  flex: 0 0 max-content;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .speed-toggle {
@@ -396,10 +403,40 @@ button.machine-window {
   box-shadow: none;
 }
 
-.machine-note {
+/* console-style status readout — same recipe as the card-slot well: dark
+   slot plate, inset shadow, small light text. Height is fixed (~3 lines,
+   matching the 52px draw button) so the row never grows with the log — it
+   scrolls instead. */
+.status-window {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 58px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.3rem 0.5rem;
+  background: var(--slot);
+  border-radius: 6px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  color: #e8d9c6;
+  text-align: left;
+}
+.status-line {
   margin: 0;
-  font-size: 0.75rem;
-  color: var(--ink-soft);
+}
+.status-info {
+  opacity: 0.9;
+}
+/* tone colors carried over from the retired toast palette, tuned to stay
+   readable on the dark well */
+.status-effect {
+  color: #a9d9a4;
+}
+.status-noEffect {
+  color: #e3b88c;
 }
 
 /* --- queue --- */
@@ -644,38 +681,6 @@ button.machine-window {
   );
   background-size: 9px 4px;
   background-repeat: repeat-x;
-}
-
-/* --- toast --- */
-.toast-layer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  padding: 0.5rem;
-  pointer-events: none;
-  z-index: 80;
-}
-.toast {
-  pointer-events: auto;
-  max-width: 340px;
-  padding: 0.6rem 0.9rem;
-  border-radius: 10px;
-  font-size: 0.82rem;
-  line-height: 1.3;
-  text-align: center;
-  border: none;
-  box-shadow: var(--shadow-soft);
-}
-.toast-effect {
-  background: var(--felt);
-  color: #23301f;
-}
-.toast-noEffect {
-  background: #d9b48a;
-  color: #4a2f18;
 }
 
 /* --- crowbar targeting --- */

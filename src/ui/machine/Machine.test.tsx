@@ -3,12 +3,13 @@
 // Wiring guard for the chosen-piece window: once a piece is drawn (or
 // crowbar-lifted) it must render draggable INSIDE the display window, with the
 // window in its `chosen` state — there is no separate tray or bay. Also guards
-// the routing hint, including the forced full-queue variant, and the Second
+// the routing hint reaching the status log (hint *production*, including the
+// forced full-queue variant, is pinned in statusLog.test.ts), and the Second
 // Look chooser, which likewise lives in the window (`choices` state) and must
 // actually dispatch SECOND_LOOK_KEEP so the player can reach `routing`.
 
-import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import { reduce } from "@/game/reducer";
 import type { GameState } from "@/game/types";
 import { currentDisplayedPiece } from "@/game/selectors";
@@ -26,26 +27,25 @@ function enterSecondLook(draws: 1 | 2): GameState {
 }
 
 afterEach(cleanup);
+// The store is a module singleton — dispatches leave log residue, so each
+// test starts from an empty status history.
+beforeEach(() => useGame.setState({ log: [] }));
 
 describe("Machine chosen-piece window", () => {
-  it("renders the held piece draggable inside the window, in the chosen state", () => {
-    const s = reduce(makeState(), { type: "DRAW" });
-    expect(s.held).not.toBeNull();
-    useGame.setState({ state: s });
+  it("renders the held piece draggable inside the window, and logs the routing hint", () => {
+    // Draw through the store (not bare reduce): the routing hint is a log
+    // entry appended by dispatch, no longer a conditional render.
+    useGame.setState({ state: makeState() });
+    useGame.getState().dispatch({ type: "DRAW" });
+    expect(useGame.getState().state.held).not.toBeNull();
 
     const { container } = render(<Machine />);
     const win = container.querySelector(".machine-window")!;
     expect(win.classList.contains("chosen")).toBe(true);
     expect(win.querySelector(".held-token svg")).not.toBeNull();
-    expect(screen.getByText(/drag onto the board/i)).toBeTruthy();
-  });
-
-  it("shows the forced hint when the queue was full at draw time", () => {
-    const s = reduce(makeState(), { type: "DRAW" });
-    useGame.setState({ state: { ...s, held: { ...s.held!, fullQueueForce: true } } });
-
-    render(<Machine />);
-    expect(screen.getByText(/queue is full/i)).toBeTruthy();
+    expect(
+      within(screen.getByRole("log")).getByText(/drag onto the board/i),
+    ).toBeTruthy();
   });
 
   it("shows the plain cycling window while nothing is held", () => {

@@ -684,18 +684,6 @@ button.machine-window {
 }
 
 /* --- crowbar targeting --- */
-.crowbar-prompt {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  background: rgba(201, 138, 94, 0.16);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  font-size: 0.85rem;
-}
 .cell-lift {
   fill: var(--accent);
   fill-opacity: 0.22;

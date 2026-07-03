@@ -7,7 +7,6 @@ import { TargetThumbnail } from "./board/TargetThumbnail";
 import { Machine } from "./machine/Machine";
 import { Queue } from "./queue/Queue";
 import { Hand } from "./cards/Hand";
-import { CrowbarPrompt } from "./cards/CrowbarPrompt";
 import { EndScreen } from "./end/EndScreen";
 import { DevPanel } from "./dev/DevPanel";
 
@@ -46,7 +45,6 @@ export function GameScreen() {
           if (pendingCrowbar !== null) playCrowbar(pendingCrowbar, asCellIndex(cell));
         }}
       />
-      <CrowbarPrompt />
       <Queue />
       <Machine />
       <Hand />

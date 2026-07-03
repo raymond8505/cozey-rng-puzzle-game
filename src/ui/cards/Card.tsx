@@ -19,6 +19,7 @@ export function Card({ card, playable }: CardProps) {
   const playCardAction = useGame((s) => s.playCard);
   const armCrowbar = useGame((s) => s.armCrowbar);
   const playCrowbar = useGame((s) => s.playCrowbar);
+  const devRemoveCard = useGame((s) => s.devRemoveCard);
   const boardHasPiece = useGame((s) => s.state.board.some((c) => c !== null));
   const meta = CARD_META[card.type];
 
@@ -43,6 +44,18 @@ export function Card({ card, playable }: CardProps) {
       <div className="card-name">{meta.name}</div>
       <div className="card-blurb">{meta.blurb}</div>
       <div className="card-class">{meta.cardClass}</div>
+      {import.meta.env.DEV && (
+        <button
+          type="button"
+          className="card-remove"
+          aria-label={`Remove ${meta.name} from hand`}
+          // capture-stop so the wrapper's motion drag never hijacks the press
+          onPointerDownCapture={(e) => e.stopPropagation()}
+          onClick={() => devRemoveCard(card.instanceId)}
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 

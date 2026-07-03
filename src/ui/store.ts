@@ -69,6 +69,10 @@ interface GameStore {
 
   /** Dev-only: overwrite the board directly to eyeball rendering. */
   devSetBoard: (board: readonly (PieceId | null)[]) => void;
+  /** Dev-only: conjure a card into the hand (ignores hand capacity). */
+  devAddCard: (type: CardType) => void;
+  /** Dev-only: discard a card straight out of the hand. */
+  devRemoveCard: (instanceId: number) => void;
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
@@ -144,6 +148,20 @@ export const useGame = create<GameStore>((set, get) => {
 
     devSetBoard: (board) =>
       set((s) => ({ state: { ...s.state, board, pool: [], queue: [], held: null } })),
+
+    devAddCard: (type) =>
+      set((s) => {
+        // instanceIds must stay unique across hand/deck/discard (React keys,
+        // PLAY_CARD lookups), so mint one past everything in circulation.
+        const everyCard = [...s.state.hand, ...s.state.deck, ...s.state.discard];
+        const instanceId = everyCard.reduce((m, c) => Math.max(m, c.instanceId), -1) + 1;
+        return { state: { ...s.state, hand: [...s.state.hand, { instanceId, type }] } };
+      }),
+
+    devRemoveCard: (instanceId) =>
+      set((s) => ({
+        state: { ...s.state, hand: s.state.hand.filter((c) => c.instanceId !== instanceId) },
+      })),
   };
 });
 

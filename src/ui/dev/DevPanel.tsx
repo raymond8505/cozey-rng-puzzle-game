@@ -1,14 +1,17 @@
 import { useGame } from "../store";
 import { PUZZLES } from "../puzzles";
 import { Rng, shuffle, hashSeed } from "@/game/rng";
-import type { PieceId } from "@/game/types";
+import type { CardType, PieceId } from "@/game/types";
+import { CARD_META } from "../cards/cardMeta";
 
-/** Dev-only harness: eyeball board rendering (correct / shuffled fill) and jump
- *  straight to any puzzle. Rendered only under import.meta.env.DEV. */
+/** Dev-only harness: eyeball board rendering (correct / shuffled fill), jump
+ *  straight to any puzzle, and conjure cards into the hand. Rendered only
+ *  under import.meta.env.DEV. */
 export function DevPanel() {
   const state = useGame((s) => s.state);
   const puzzleIndex = useGame((s) => s.puzzleIndex);
   const devSetBoard = useGame((s) => s.devSetBoard);
+  const devAddCard = useGame((s) => s.devAddCard);
   const restart = useGame((s) => s.restart);
   const selectPuzzle = useGame((s) => s.selectPuzzle);
 
@@ -26,6 +29,25 @@ export function DevPanel() {
       <button onClick={fillShuffled}>Shuffled</button>
       <button onClick={clear}>Clear</button>
       <button onClick={() => restart()}>Reseed</button>
+
+      <span className="dev-label">card</span>
+      {/* value pinned to "" so it always resets to the placeholder after adding */}
+      <select
+        aria-label="Add a card to hand"
+        value=""
+        onChange={(e) => {
+          if (e.target.value) devAddCard(e.target.value as CardType);
+        }}
+      >
+        <option value="" disabled>
+          add card…
+        </option>
+        {(Object.keys(CARD_META) as CardType[]).map((type) => (
+          <option key={type} value={type}>
+            {CARD_META[type].name}
+          </option>
+        ))}
+      </select>
 
       <span className="dev-label">puzzle</span>
       {PUZZLES.map((p, i) => (

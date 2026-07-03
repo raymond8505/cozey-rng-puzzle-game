@@ -107,3 +107,30 @@ describe("seated card lifecycle", () => {
     expect(useGame.getState().seatedCard).toBeNull();
   });
 });
+
+// Dev harness: conjure any card into the hand / discard one straight out.
+// instanceIds must stay unique across all circulating cards (React keys,
+// PLAY_CARD lookups) even after several adds.
+describe("dev card tools", () => {
+  it("devAddCard appends the chosen card with a unique instanceId", () => {
+    useGame.getState().restart("dev-card-seed");
+    useGame.getState().devAddCard("governor");
+    useGame.getState().devAddCard("governor");
+
+    const s = useGame.getState().state;
+    expect(s.hand.map((c) => c.type)).toEqual(["governor", "governor"]);
+    const ids = [...s.hand, ...s.deck, ...s.discard].map((c) => c.instanceId);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("devRemoveCard drops exactly that card from the hand", () => {
+    useGame.getState().restart("dev-card-seed");
+    useGame.getState().devAddCard("crowbar");
+    useGame.getState().devAddCard("secondLook");
+    const [target, keep] = useGame.getState().state.hand;
+
+    useGame.getState().devRemoveCard(target.instanceId);
+
+    expect(useGame.getState().state.hand).toEqual([keep]);
+  });
+});

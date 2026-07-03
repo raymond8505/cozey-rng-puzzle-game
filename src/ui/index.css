@@ -338,7 +338,8 @@ button.machine-window {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  justify-content: center;
+  justify-content: flex-start;
+  width: 100%;
 }
 
 .speed-toggle {
@@ -530,6 +531,25 @@ button.machine-window {
   opacity: 0.5;
   filter: grayscale(0.3);
 }
+/* dev-only: discard a card straight out of the hand */
+.card-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(74, 63, 53, 0.3);
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1;
+  z-index: 2;
+}
+.card-remove:hover {
+  background: var(--accent-deep);
+}
 
 .card {
   position: relative;
@@ -703,13 +723,15 @@ button.machine-window {
   color: var(--ink-soft);
 }
 
-.dev-panel button {
+.dev-panel button,
+.dev-panel select {
   padding: 0.4rem 0.7rem;
   min-height: 36px;
   background: var(--paper);
   border: 1px solid rgba(74, 63, 53, 0.25);
   border-radius: 8px;
   font-size: 0.85rem;
+  color: inherit;
 }
 
 .dev-panel button:active {

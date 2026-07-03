@@ -669,3 +669,8 @@ button {
 .dev-panel button:active {
   background: var(--paper-deep);
 }
+.dev-panel button.dev-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent-deep);
+}

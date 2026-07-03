@@ -53,6 +53,8 @@ interface GameStore {
   restart: (seed?: string) => void;
   /** Play again: alternate to the next puzzle with a fresh seed. */
   playAgain: () => void;
+  /** Dev: start a fresh game on a specific puzzle. */
+  selectPuzzle: (index: number) => void;
 
   /** Play a non-crowbar card: dispatch, then surface the seat + toast. */
   playCard: (instanceId: number) => void;
@@ -119,6 +121,14 @@ export const useGame = create<GameStore>((set, get) => {
       set({ pendingCrowbar: null });
       surface("crowbar");
     },
+
+    selectPuzzle: (index) =>
+      set(() => ({
+        puzzleIndex: index,
+        puzzleSrc: PUZZLES[index].src,
+        state: newGame(index, `pick-${index}`),
+        ...freshFeedback,
+      })),
 
     clearPending: () => set({ pendingCrowbar: null }),
     dismissToast: () => set({ toast: null }),

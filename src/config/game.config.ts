@@ -69,9 +69,9 @@ export const GAME_CONFIG: GameConfig = {
   },
   copy: {
     noEffect: {
-      edgePunch: "No edge pieces are left in the Machine — the filter matched nothing.",
-      neighborPunch: "Nothing on the board borders any piece still in the Machine.",
-      secondLook: "Only one piece remained — the second look showed the same piece.",
+      edgePunch: "No edge tiles are left in the Machine — the filter matched nothing.",
+      neighborPunch: "Nothing on the board borders any tile still in the Machine.",
+      secondLook: "Only one tile remained — the second look showed the same tile.",
       crowbar: "There was nothing on the board to pry loose.",
     },
   },

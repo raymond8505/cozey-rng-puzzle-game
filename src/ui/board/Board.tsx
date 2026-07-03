@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { motion, type PanInfo } from "motion/react";
 import type { GameState, PieceId } from "@/game/types";
 import { asCellIndex } from "@/game/types";
 import { gridDims, isOverlappingPlacement } from "@/game/selectors";
@@ -5,28 +7,39 @@ import { useGame } from "../store";
 import { UNIT } from "./piecePath";
 import { PieceView } from "./PieceView";
 import { EmptyCell } from "./EmptyCell";
+import { PieceSprite } from "../piece/PieceSprite";
+import { resolveDropAt } from "../dnd/resolveDrop";
+import { clientXY } from "../dnd/pointer";
 
 interface BoardProps {
   state: GameState;
   /** When true, empty cells become drag-drop targets (data-drop="cell:i"). */
   dropActive?: boolean;
-  /** When true, placed cells become clickable crowbar lift targets. */
-  liftActive?: boolean;
-  onLiftCell?: (cell: number) => void;
+  /** Armed crowbar: placed tiles grow drag ghosts that pry them off the board
+   *  when dropped on the machine window or the queue. Tiles are always
+   *  dragged — there is no click-to-pry. */
+  pryActive?: boolean;
+  onPry?: (cell: number, dest: "window" | "queue") => void;
 }
+
+/** Matches PieceSprite's default `pad`: the ghost expands past its cell by
+ *  this fraction per side so the sprite's tabs line up with the board tile. */
+const PRY_PAD = 0.32;
 
 /** The jigsaw board: a single source image revealed piece-by-piece as cells
  *  fill. Scales to any cols×rows via viewBox — no pixel constants. */
 export function Board({
   state,
   dropActive = false,
-  liftActive = false,
-  onLiftCell,
+  pryActive = false,
+  onPry,
 }: BoardProps) {
   const dims = gridDims(state);
   const puzzleSrc = useGame((s) => s.puzzleSrc);
   const boardW = dims.cols * UNIT;
   const boardH = dims.rows * UNIT;
+  // Which cell's pry ghost is mid-drag (its board tile dims to read as lifted).
+  const [lifting, setLifting] = useState<number | null>(null);
 
   // A piece is "raised" (overlapping) when it's on the wrong cell AND has a
   // filled orthogonal neighbor to overlap. Raised pieces render last so they
@@ -37,75 +50,112 @@ export function Board({
   const flush = placed.filter((p) => !isOverlappingPlacement(state, asCellIndex(p.cell)));
   const raised = placed.filter((p) => isOverlappingPlacement(state, asCellIndex(p.cell)));
 
+  const pryDragEnd =
+    (cell: number) => (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      setLifting(null);
+      const target = resolveDropAt(...clientXY(e, info));
+      if (target?.kind === "window" || target?.kind === "queue") {
+        onPry?.(cell, target.kind);
+      } // anything else (board, slot, miss): snap back, tile stays put
+    };
+
   return (
-    <div
-      className="board-frame"
-      style={{ aspectRatio: `${dims.cols} / ${dims.rows}` }}
-    >
-      <svg
-        className="board-svg"
-        viewBox={`0 0 ${boardW} ${boardH}`}
-        preserveAspectRatio="xMidYMid meet"
-        role="img"
-        aria-label="Puzzle board"
+    <div className={pryActive ? "board-frame prying" : "board-frame"}>
+      {/* The stage is forced to the grid's exact ratio (width AND height
+          capped together), so the svg fills it edge to edge and the HTML pry
+          layer's percentage coordinates align with the svg cells. */}
+      <div
+        className="board-stage"
+        style={{
+          aspectRatio: `${dims.cols} / ${dims.rows}`,
+          maxWidth: `calc(var(--board-stage-max-h) * ${dims.cols / dims.rows})`,
+        }}
       >
-        {state.board.map((occupant, cell) =>
-          occupant !== null ? null : (
-            <EmptyCell key={`empty-${cell}`} piece={state.pieces[cell]} dims={dims} />
-          ),
-        )}
-
-        {flush.map(({ cell, occupant }) => (
-          <PieceView
-            key={cell}
-            piece={state.pieces[occupant]}
-            cell={asCellIndex(cell)}
-            dims={dims}
-            imageHref={puzzleSrc}
-          />
-        ))}
-
-        {raised.map(({ cell, occupant }) => (
-          <PieceView
-            key={cell}
-            piece={state.pieces[occupant]}
-            cell={asCellIndex(cell)}
-            dims={dims}
-            imageHref={puzzleSrc}
-            raised
-          />
-        ))}
-
-        {dropActive &&
-          state.board.map((occupant, cell) =>
+        <svg
+          className="board-svg"
+          viewBox={`0 0 ${boardW} ${boardH}`}
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label="Puzzle board"
+        >
+          {state.board.map((occupant, cell) =>
             occupant !== null ? null : (
-              <rect
-                key={`drop-${cell}`}
-                className="cell-drop"
-                data-drop={`cell:${cell}`}
-                x={(cell % dims.cols) * UNIT}
-                y={Math.floor(cell / dims.cols) * UNIT}
-                width={UNIT}
-                height={UNIT}
-              />
+              <EmptyCell key={`empty-${cell}`} piece={state.pieces[cell]} dims={dims} />
             ),
           )}
 
-        {liftActive &&
-          state.board.map((occupant, cell) =>
-            occupant === null ? null : (
-              <rect
-                key={`lift-${cell}`}
-                className="cell-lift"
-                x={(cell % dims.cols) * UNIT}
-                y={Math.floor(cell / dims.cols) * UNIT}
-                width={UNIT}
-                height={UNIT}
-                onClick={() => onLiftCell?.(cell)}
-              />
-            ),
-          )}
-      </svg>
+          {flush.map(({ cell, occupant }) => (
+            <PieceView
+              key={cell}
+              piece={state.pieces[occupant]}
+              cell={asCellIndex(cell)}
+              dims={dims}
+              imageHref={puzzleSrc}
+              dimmed={lifting === cell}
+            />
+          ))}
+
+          {raised.map(({ cell, occupant }) => (
+            <PieceView
+              key={cell}
+              piece={state.pieces[occupant]}
+              cell={asCellIndex(cell)}
+              dims={dims}
+              imageHref={puzzleSrc}
+              raised
+              dimmed={lifting === cell}
+            />
+          ))}
+
+          {dropActive &&
+            state.board.map((occupant, cell) =>
+              occupant !== null ? null : (
+                <rect
+                  key={`drop-${cell}`}
+                  className="cell-drop"
+                  data-drop={`cell:${cell}`}
+                  x={(cell % dims.cols) * UNIT}
+                  y={Math.floor(cell / dims.cols) * UNIT}
+                  width={UNIT}
+                  height={UNIT}
+                />
+              ),
+            )}
+        </svg>
+
+        {pryActive && (
+          <div className="pry-layer">
+            {placed.map(({ cell, occupant }) => {
+              const col = cell % dims.cols;
+              const row = Math.floor(cell / dims.cols);
+              return (
+                <motion.div
+                  key={cell}
+                  className="pry-token"
+                  style={{
+                    left: `${((col - PRY_PAD) / dims.cols) * 100}%`,
+                    top: `${((row - PRY_PAD) / dims.rows) * 100}%`,
+                    width: `${((1 + 2 * PRY_PAD) / dims.cols) * 100}%`,
+                    height: `${((1 + 2 * PRY_PAD) / dims.rows) * 100}%`,
+                  }}
+                  drag
+                  dragSnapToOrigin
+                  dragMomentum={false}
+                  whileDrag={{ scale: 1.08, zIndex: 50 }}
+                  onDragStart={() => setLifting(cell)}
+                  onDragEnd={pryDragEnd(cell)}
+                >
+                  <PieceSprite
+                    piece={state.pieces[occupant]}
+                    dims={dims}
+                    className="pry-sprite"
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

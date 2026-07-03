@@ -18,12 +18,12 @@ export const CARD_META: Readonly<Record<CardType, CardMeta>> = {
   edgePunch: {
     name: "Edge Punch",
     cardClass: "attack",
-    blurb: "This draw shows only edge pieces.",
+    blurb: "This draw shows only edge tiles.",
   },
   neighborPunch: {
     name: "Neighbor Punch",
     cardClass: "attack",
-    blurb: "This draw shows pieces bordering the board.",
+    blurb: "This draw shows tiles bordering the board.",
   },
   secondLook: {
     name: "Second Look",
@@ -33,7 +33,7 @@ export const CARD_META: Readonly<Record<CardType, CardMeta>> = {
   crowbar: {
     name: "Crowbar",
     cardClass: "defense",
-    blurb: "Pry a placed piece back into your hand.",
+    blurb: "Pry a placed tile back off the board.",
   },
 };
 

@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { GAME_CONFIG } from "@/config/game.config";
-import type { GameState, GameAction, PieceId, CardType, CellIndex } from "@/game/types";
+import type {
+  GameState,
+  GameAction,
+  PieceId,
+  CardType,
+  CellIndex,
+} from "@/game/types";
 import { createInitialState } from "@/game/init";
 import { reduce } from "@/game/reducer";
 import { Rng, shuffle, hashSeed } from "@/game/rng";
@@ -16,7 +22,11 @@ import type { LogEntry, LogLine } from "./statusLog";
  *  carried in config.rng so restart() can reproduce this exact run. */
 function newGame(puzzleIndex: number, seed: string): GameState {
   const puzzle = PUZZLES[puzzleIndex];
-  return createInitialState(seed, { ...GAME_CONFIG, board: puzzle.board, rng: { seed } });
+  return createInitialState(seed, {
+    ...GAME_CONFIG,
+    board: puzzle.board,
+    rng: { seed },
+  });
 }
 
 const BOOT_INDEX = 0;
@@ -31,7 +41,10 @@ const bootState = devFill
       board:
         devHash === "#correct"
           ? boot.pieces.map((p) => p.id)
-          : shuffle(boot.pieces.map((p) => p.id), new Rng(hashSeed("dev-shuffle"))),
+          : shuffle(
+              boot.pieces.map((p) => p.id),
+              new Rng(hashSeed("dev-shuffle")),
+            ),
       pool: [],
       queue: [],
       held: null,
@@ -78,10 +91,20 @@ interface GameStore {
 // clear-and-append, so never reset on new game.
 let nextLogId = 0;
 
-const appendLog = (log: readonly LogEntry[], lines: readonly LogLine[]): LogEntry[] =>
+/** How long a dud (no-effect) card sits in the slot before the Machine spits
+ *  it back out. Long enough to register the insert, short enough not to stall
+ *  the turn. Exported for tests. */
+export const NO_EFFECT_EJECT_MS = 1200;
+
+const appendLog = (
+  log: readonly LogEntry[],
+  lines: readonly LogLine[],
+): LogEntry[] =>
   lines.length === 0
     ? (log as LogEntry[])
-    : [...log, ...lines.map((l) => ({ id: nextLogId++, ...l }))].slice(-LOG_CAP);
+    : [...log, ...lines.map((l) => ({ id: nextLogId++, ...l }))].slice(
+        -LOG_CAP,
+      );
 
 export const useGame = create<GameStore>((set) => {
   /** Reduce + transition hints + seat lifecycle, shared by every action that
@@ -91,7 +114,7 @@ export const useGame = create<GameStore>((set) => {
     s: GameStore,
     action: GameAction,
     extra?: (next: GameState) => readonly LogLine[],
-  ): Partial<GameStore> => {
+  ): { state: GameState; log: LogEntry[]; seatedCard?: null } => {
     const state = reduce(s.state, action);
     const log = appendLog(s.log, [
       ...(extra ? extra(state) : []),
@@ -105,13 +128,44 @@ export const useGame = create<GameStore>((set) => {
 
   /** Outcome line for a just-reduced card play, if it produced a result. */
   const resultLines = (state: GameState): LogLine[] =>
-    state.lastCardResult ? [messageForResult(state.config, state.lastCardResult)] : [];
+    state.lastCardResult
+      ? [messageForResult(state.config, state.lastCardResult)]
+      : [];
+
+  /** The insert announcement — shared by direct plays and crowbar arming so
+   *  the console always narrates a play the same way. */
+  const insertedLine = (card: CardType): LogLine => ({
+    tone: "info",
+    text: `Card Inserted: ${CARD_META[card].name}.`,
+  });
 
   /** The played-card announcement plus its outcome line, in reading order. */
   const playLines = (card: CardType, state: GameState): LogLine[] => [
-    { tone: "info", text: `Played ${CARD_META[card].name}.` },
+    insertedLine(card),
     ...resultLines(state),
   ];
+
+  // Guards the eject timer against clearing a card seated later: each seat
+  // bumps the serial, and a pending eject only fires if its seat is still
+  // the latest one.
+  let seatSerial = 0;
+
+  /** Seat a just-played card. An effective card stays seated (until a tile is
+   *  chosen); a dud (no-effect) card gets spat back out after a beat — its
+   *  explanation is already in the console, and the turn continues. */
+  const seatCard = (card: CardType, state: GameState): Partial<GameStore> => {
+    const serial = ++seatSerial;
+    if (state.lastCardResult?.kind === "noEffect") {
+      setTimeout(() => {
+        set((s) =>
+          serial === seatSerial && s.seatedCard !== null
+            ? { seatedCard: null }
+            : {},
+        );
+      }, NO_EFFECT_EJECT_MS);
+    }
+    return { seatedCard: card };
+  };
 
   /** Feedback reset for a fresh game: empty seat and prompt state, log
    *  opening with the draw prompt (unless the board starts with a dry pool,
@@ -150,20 +204,24 @@ export const useGame = create<GameStore>((set) => {
       set((s) => {
         const card = s.state.hand.find((c) => c.instanceId === instanceId);
         if (!card) return {};
-        return {
-          ...applyAction(s, { type: "PLAY_CARD", instanceId }, (next) =>
-            playLines(card.type, next),
-          ),
-          seatedCard: card.type,
-        };
+        const applied = applyAction(s, { type: "PLAY_CARD", instanceId }, (next) =>
+          playLines(card.type, next),
+        );
+        return { ...applied, ...seatCard(card.type, applied.state) };
       }),
 
     armCrowbar: (instanceId) =>
       set((s) => ({
         pendingCrowbar: instanceId,
+        // The card is in the machine from the moment it's played — it stays
+        // seated through the whole armed-lift sequence.
+        seatedCard: "crowbar",
         log: appendLog(s.log, [
-          { tone: "info", text: "Played Crowbar." },
-          { tone: "info", text: "Tap a placed piece to pry it loose." },
+          insertedLine("crowbar"),
+          {
+            tone: "info",
+            text: "Drag a tile off the board — into the window or the queue — to pry it loose.",
+          },
         ]),
       })),
 
@@ -172,12 +230,15 @@ export const useGame = create<GameStore>((set) => {
         // The armed path already announced the play at arm time; only the
         // direct no-effect play (empty board, never armed) announces here.
         const announced = s.pendingCrowbar !== null;
+        const applied = applyAction(
+          s,
+          { type: "PLAY_CROWBAR", instanceId, cell },
+          (next) => (announced ? resultLines(next) : playLines("crowbar", next)),
+        );
         return {
-          ...applyAction(s, { type: "PLAY_CROWBAR", instanceId, cell }, (next) =>
-            announced ? resultLines(next) : playLines("crowbar", next),
-          ),
+          ...applied,
           pendingCrowbar: null,
-          seatedCard: "crowbar",
+          ...seatCard("crowbar", applied.state),
         };
       }),
 
@@ -193,20 +254,32 @@ export const useGame = create<GameStore>((set) => {
       }),
 
     devSetBoard: (board) =>
-      set((s) => ({ state: { ...s.state, board, pool: [], queue: [], held: null } })),
+      set((s) => ({
+        state: { ...s.state, board, pool: [], queue: [], held: null },
+      })),
 
     devAddCard: (type) =>
       set((s) => {
         // instanceIds must stay unique across hand/deck/discard (React keys,
         // PLAY_CARD lookups), so mint one past everything in circulation.
-        const everyCard = [...s.state.hand, ...s.state.deck, ...s.state.discard];
-        const instanceId = everyCard.reduce((m, c) => Math.max(m, c.instanceId), -1) + 1;
-        return { state: { ...s.state, hand: [...s.state.hand, { instanceId, type }] } };
+        const everyCard = [
+          ...s.state.hand,
+          ...s.state.deck,
+          ...s.state.discard,
+        ];
+        const instanceId =
+          everyCard.reduce((m, c) => Math.max(m, c.instanceId), -1) + 1;
+        return {
+          state: { ...s.state, hand: [...s.state.hand, { instanceId, type }] },
+        };
       }),
 
     devRemoveCard: (instanceId) =>
       set((s) => ({
-        state: { ...s.state, hand: s.state.hand.filter((c) => c.instanceId !== instanceId) },
+        state: {
+          ...s.state,
+          hand: s.state.hand.filter((c) => c.instanceId !== instanceId),
+        },
       })),
   };
 });

@@ -14,7 +14,7 @@ import { StatusWindow } from "./StatusWindow";
 afterEach(cleanup);
 
 const LOG: LogEntry[] = [
-  { id: 0, tone: "info", text: "Played Governor." },
+  { id: 0, tone: "info", text: "Card Inserted: Governor." },
   { id: 1, tone: "effect", text: "Governor engaged — comfortable speed this draw." },
   { id: 2, tone: "noEffect", text: "There was nothing on the board to pry loose." },
 ];

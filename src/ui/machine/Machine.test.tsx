@@ -69,7 +69,7 @@ describe("Machine window click-to-draw", () => {
     const displayed = currentDisplayedPiece(s);
 
     render(<Machine />);
-    fireEvent.click(screen.getByRole("button", { name: /draw the displayed piece/i }));
+    fireEvent.click(screen.getByRole("button", { name: /draw the displayed tile/i }));
 
     const after = useGame.getState().state;
     expect(after.held?.piece).toBe(displayed);
@@ -80,7 +80,7 @@ describe("Machine window click-to-draw", () => {
     useGame.setState({ state: reduce(makeState(), { type: "DRAW" }) });
 
     render(<Machine />);
-    expect(screen.queryByRole("button", { name: /draw the displayed piece/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /draw the displayed tile/i })).toBeNull();
   });
 });
 
@@ -98,7 +98,7 @@ describe("Machine second-look window", () => {
     expect(win.classList.contains("choices")).toBe(true);
     expect(win.classList.contains("chosen")).toBe(true); // green: tile waits to be grabbed
 
-    fireEvent.click(screen.getByRole("button", { name: /keep this piece/i }));
+    fireEvent.click(screen.getByRole("button", { name: /keep this tile/i }));
 
     const after = useGame.getState().state;
     expect(after.phase).toBe("routing");
@@ -111,7 +111,7 @@ describe("Machine second-look window", () => {
     const displayed = currentDisplayedPiece(s);
 
     render(<Machine />);
-    fireEvent.click(screen.getByRole("button", { name: /draw the displayed piece/i }));
+    fireEvent.click(screen.getByRole("button", { name: /draw the displayed tile/i }));
 
     const after = useGame.getState().state;
     expect(after.secondLook.secondCapture).toBe(displayed);
@@ -124,9 +124,9 @@ describe("Machine second-look window", () => {
     useGame.setState({ state: s });
 
     render(<Machine />);
-    const keeps = screen.getAllByRole("button", { name: /keep this piece/i });
+    const keeps = screen.getAllByRole("button", { name: /keep this tile/i });
     expect(keeps).toHaveLength(2);
-    expect(screen.queryByRole("button", { name: /draw the displayed piece/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /draw the displayed tile/i })).toBeNull();
     fireEvent.click(keeps[1]); // keep the second
 
     const after = useGame.getState().state;
@@ -137,7 +137,7 @@ describe("Machine second-look window", () => {
   it("offers no keep buttons outside the second-look phase", () => {
     useGame.setState({ state: makeState() }); // idle
     render(<Machine />);
-    expect(screen.queryByRole("button", { name: /keep this piece/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /keep this tile/i })).toBeNull();
   });
 });
 
@@ -154,8 +154,10 @@ describe("Machine window while crowbar is armed", () => {
     const { container } = render(<Machine />);
     const win = container.querySelector(".machine-window")!;
     expect(win.classList.contains("awaiting")).toBe(true);
+    // the empty window is the drop target for the tile being pried loose
+    expect(win.getAttribute("data-drop")).toBe("window");
     expect(win.querySelector("svg")).toBeNull(); // no reel sprite
-    expect(screen.queryByRole("button", { name: /draw the displayed piece/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /draw the displayed tile/i })).toBeNull();
   });
 
   it("disables the Draw button until the lift resolves", () => {
@@ -170,6 +172,6 @@ describe("Machine window while crowbar is armed", () => {
 
     const { container } = render(<Machine />);
     expect(container.querySelector(".machine-window.awaiting")).toBeNull();
-    expect(screen.getByRole("button", { name: /draw the displayed piece/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /draw the displayed tile/i })).toBeTruthy();
   });
 });

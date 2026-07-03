@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { useGame } from "./store";
+import { describe, it, expect, vi } from "vitest";
+import { useGame, NO_EFFECT_EJECT_MS } from "./store";
 import { PUZZLES } from "./puzzles";
 import { edgeSignature } from "@/fixtures/game.fixture";
 import { GAME_CONFIG } from "@/config/game.config";
@@ -80,8 +80,9 @@ describe("per-game seeding", () => {
   });
 });
 
-// The seated card is NOT on a timer: it stays in the slot until a tile is
-// chosen. All feedback about the play lives in the status log.
+// An effective card stays seated until a tile is chosen — no timer. Only a
+// dud (no-effect) card is on a timer: the Machine spits it back out after
+// NO_EFFECT_EJECT_MS. All feedback about the play lives in the status log.
 describe("seated card lifecycle", () => {
   /** Fresh game with a single governor in hand, played into the slot. */
   function playGovernor() {
@@ -96,7 +97,7 @@ describe("seated card lifecycle", () => {
     expect(useGame.getState().seatedCard).toBe("governor");
     expect(useGame.getState().log.map(({ tone, text }) => ({ tone, text }))).toEqual([
       { tone: "info", text: "Draw a tile." },
-      { tone: "info", text: "Played Governor." },
+      { tone: "info", text: "Card Inserted: Governor." },
       { tone: "effect", text: EFFECT_TOAST.governorSpeed },
       {
         tone: "info",
@@ -114,18 +115,48 @@ describe("seated card lifecycle", () => {
       "Drag onto the board, or into the queue to park.",
     );
   });
+
+  it("an effective card is not on a timer — it outlasts the eject window", () => {
+    vi.useFakeTimers();
+    try {
+      playGovernor();
+      vi.advanceTimersByTime(NO_EFFECT_EJECT_MS * 2);
+      expect(useGame.getState().seatedCard).toBe("governor");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a dud (no-effect) card seats, then ejects after a beat", () => {
+    vi.useFakeTimers();
+    try {
+      // empty board: crowbar resolves as no-effect
+      useGame.getState().restart("eject-test");
+      useGame.getState().devAddCard("crowbar");
+      const id = useGame.getState().state.hand.at(-1)!.instanceId;
+      useGame.getState().playCrowbar(id);
+
+      expect(useGame.getState().seatedCard).toBe("crowbar");
+      vi.advanceTimersByTime(NO_EFFECT_EJECT_MS);
+      expect(useGame.getState().seatedCard).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 // The status log is the single feedback surface: card plays, outcomes, and
 // hints all append here, capped, and reset with the game they narrate.
 describe("status log", () => {
-  it("arming the crowbar announces the play and the lift prompt", () => {
+  it("arming the crowbar seats it and announces the play and the drag prompt", () => {
     useGame.getState().restart("log-test");
     useGame.getState().armCrowbar(1);
+    // in the slot from the moment it's played, through the whole armed lift
+    expect(useGame.getState().seatedCard).toBe("crowbar");
     expect(useGame.getState().log.map((l) => l.text)).toEqual([
       "Draw a tile.",
-      "Played Crowbar.",
-      "Tap a placed piece to pry it loose.",
+      "Card Inserted: Crowbar.",
+      "Drag a tile off the board — into the window or the queue — to pry it loose.",
     ]);
   });
 
@@ -136,7 +167,7 @@ describe("status log", () => {
     useGame.getState().playCrowbar(id);
     expect(useGame.getState().log.map(({ tone, text }) => ({ tone, text }))).toEqual([
       { tone: "info", text: "Draw a tile." },
-      { tone: "info", text: "Played Crowbar." },
+      { tone: "info", text: "Card Inserted: Crowbar." },
       { tone: "noEffect", text: GAME_CONFIG.copy.noEffect.crowbar },
     ]);
   });
@@ -147,7 +178,9 @@ describe("status log", () => {
     for (let i = 0; i < LOG_CAP; i++) useGame.getState().armCrowbar(i);
     const log = useGame.getState().log;
     expect(log).toHaveLength(LOG_CAP);
-    expect(log.at(-1)?.text).toBe("Tap a placed piece to pry it loose.");
+    expect(log.at(-1)?.text).toBe(
+      "Drag a tile off the board — into the window or the queue — to pry it loose.",
+    );
     // ids stay unique after trimming (they never reset)
     expect(new Set(log.map((l) => l.id)).size).toBe(LOG_CAP);
   });

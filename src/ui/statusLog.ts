@@ -48,7 +48,7 @@ export function logForTransition(prev: GameState, next: GameState): LogLine[] {
     lines.push({
       tone: "info",
       text: next.held.fullQueueForce
-        ? "Queue is full — drag the new piece, or a queued one, onto the board."
+        ? "Queue is full — drag the new tile, or a queued one, onto the board."
         : "Drag onto the board, or into the queue to park.",
     });
   }
@@ -57,7 +57,7 @@ export function logForTransition(prev: GameState, next: GameState): LogLine[] {
   if (prev.phase !== "secondLook" && next.phase === "secondLook") {
     lines.push({
       tone: "info",
-      text: "Click the captured piece to keep it, or draw again.",
+      text: "Click the captured tile to keep it, or draw again.",
     });
   }
 

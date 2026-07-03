@@ -33,7 +33,7 @@ describe("logForTransition", () => {
     expect(logForTransition(prev, next)).toEqual([
       {
         tone: "info",
-        text: "Queue is full — drag the new piece, or a queued one, onto the board.",
+        text: "Queue is full — drag the new tile, or a queued one, onto the board.",
       },
     ]);
   });
@@ -46,7 +46,7 @@ describe("logForTransition", () => {
 
     // the capture is held by the window, not the hand — no routing hint yet
     expect(logForTransition(armed, looked)).toEqual([
-      { tone: "info", text: "Click the captured piece to keep it, or draw again." },
+      { tone: "info", text: "Click the captured tile to keep it, or draw again." },
     ]);
     // staying in the phase re-announces nothing
     expect(logForTransition(looked, looked)).toEqual([]);

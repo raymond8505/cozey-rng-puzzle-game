@@ -13,6 +13,9 @@
   --radius: 14px;
   --shadow-soft:
     0 2px 6px rgba(74, 63, 53, 0.14), 0 8px 24px rgba(74, 63, 53, 0.1);
+  /* board viewport budget, minus the frame's 2×8px padding — the stage caps
+     width and height together so the svg never letterboxes inside it */
+  --board-stage-max-h: calc(42vh - 16px);
 
   color-scheme: light;
 }
@@ -94,12 +97,23 @@ button {
 /* --- board --- */
 .board-frame {
   width: 100%;
-  max-height: 42vh;
   background: var(--paper);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
   padding: 8px;
   overflow: hidden;
+}
+/* pry ghosts must be able to leave the board on their way to the machine */
+.board-frame.prying {
+  overflow: visible;
+}
+/* exact-ratio stage (aspect-ratio + max-width set inline per grid): the svg
+   fills it edge to edge, so the pry layer's % coordinates match svg cells */
+.board-stage {
+  position: relative;
+  width: 100%;
+  max-height: var(--board-stage-max-h);
+  margin: 0 auto;
 }
 
 .board-svg {
@@ -107,6 +121,31 @@ button {
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+
+/* --- drag-to-pry (armed crowbar): tiles are always dragged, never clicked.
+   Each placed tile gets an HTML ghost aligned over it; dragging the ghost to
+   the machine window or queue pries the tile loose. */
+.pry-layer {
+  position: absolute;
+  inset: 0;
+}
+.pry-token {
+  position: absolute;
+  cursor: grab;
+  touch-action: none;
+  filter: drop-shadow(0 0 6px rgba(111, 191, 115, 0.55));
+}
+.pry-token:active {
+  cursor: grabbing;
+}
+.pry-sprite {
+  width: 100%;
+  height: 100%;
+}
+/* the board tile under a mid-drag ghost: faded so it reads as lifted off */
+.piece-dimmed {
+  opacity: 0.3;
 }
 
 .piece-outline {
@@ -426,9 +465,11 @@ button.machine-window {
   background: var(--slot);
   border-radius: 6px;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
+  /* terminal voice for the console; mono needs no tracking help */
+  font-family: "IBM Plex Mono", Consolas, monospace;
   font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0;
   line-height: 1.4;
   color: #e8d9c6;
   text-align: left;
@@ -712,19 +753,6 @@ button.machine-window {
   );
   background-size: 9px 4px;
   background-repeat: repeat-x;
-}
-
-/* --- crowbar targeting --- */
-.cell-lift {
-  fill: var(--accent);
-  fill-opacity: 0.22;
-  stroke: var(--accent-deep);
-  stroke-width: 2;
-  cursor: pointer;
-  transition: fill-opacity 0.15s ease;
-}
-.cell-lift:hover {
-  fill-opacity: 0.4;
 }
 
 /* --- dev panel --- */

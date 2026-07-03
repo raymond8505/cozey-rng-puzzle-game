@@ -16,7 +16,7 @@ export function Hand() {
   return (
     <section className="hand" aria-label="Your cards">
       {hand.length === 0 ? (
-        <p className="hand-empty">No cards — place pieces to draw more.</p>
+        <p className="hand-empty">No cards — place tiles to draw more.</p>
       ) : (
         <div className="hand-row">
           {hand.map((card) => (

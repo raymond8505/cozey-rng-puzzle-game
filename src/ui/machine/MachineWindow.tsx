@@ -35,7 +35,7 @@ export function MachineWindow({
     return (
       <div
         className="machine-window chosen"
-        aria-label="Chosen piece — drag it onto the board or queue"
+        aria-label="Chosen tile — drag it onto the board or queue"
       >
         <HeldToken />
       </div>
@@ -44,7 +44,11 @@ export function MachineWindow({
 
   if (awaitingLift) {
     return (
-      <div className="machine-window awaiting" aria-label="Waiting for the pried piece" />
+      <div
+        className="machine-window awaiting"
+        data-drop="window"
+        aria-label="Waiting for the pried tile — drop it here"
+      />
     );
   }
 
@@ -53,12 +57,12 @@ export function MachineWindow({
     return (
       <div
         className="machine-window chosen choices"
-        aria-label="Second Look — click a captured piece to keep it"
+        aria-label="Second Look — click a captured tile to keep it"
       >
         <button
           type="button"
           className="window-piece capture"
-          aria-label="Keep this piece"
+          aria-label="Keep this tile"
           onClick={() => onKeep("first")}
         >
           <PieceSprite piece={state.pieces[firstCapture]} dims={dims} className="machine-sprite" />
@@ -67,7 +71,7 @@ export function MachineWindow({
           <button
             type="button"
             className="window-piece capture"
-            aria-label="Keep this piece"
+            aria-label="Keep this tile"
             onClick={() => onKeep("second")}
           >
             <PieceSprite
@@ -83,7 +87,7 @@ export function MachineWindow({
             <button
               type="button"
               className="window-piece"
-              aria-label="Draw the displayed piece"
+              aria-label="Draw the displayed tile"
               onClick={onDraw}
             >
               <PieceSprite piece={state.pieces[current]} dims={dims} className="machine-sprite" />
@@ -106,7 +110,7 @@ export function MachineWindow({
       <button
         type="button"
         className="machine-window"
-        aria-label="Draw the displayed piece"
+        aria-label="Draw the displayed tile"
         onClick={onDraw}
       >
         {sprite}

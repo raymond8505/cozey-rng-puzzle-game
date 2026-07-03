@@ -11,11 +11,21 @@ interface PieceViewProps {
   /** A misplaced piece overlapping a filled neighbor — drawn raised, casting a
    *  shadow at the seam so it's clear it can't seat (something's under it). */
   raised?: boolean;
+  /** Faded while its pry-drag ghost is in flight, so the tile reads as lifted
+   *  off the board. On the OUTER group: motion pins the inner one's opacity. */
+  dimmed?: boolean;
 }
 
 /** A placed piece: its home picture crop, clipped to its jigsaw outline, then
  *  translated onto its current cell. When cell === home it aligns seamlessly. */
-export function PieceView({ piece, cell, dims, imageHref, raised = false }: PieceViewProps) {
+export function PieceView({
+  piece,
+  cell,
+  dims,
+  imageHref,
+  raised = false,
+  dimmed = false,
+}: PieceViewProps) {
   const path = homePiecePath(piece, dims);
   const [dx, dy] = cellOffset(piece, cell, dims);
   const clipId = `clip-piece-${piece.id}`;
@@ -23,7 +33,10 @@ export function PieceView({ piece, cell, dims, imageHref, raised = false }: Piec
   const boardH = dims.rows * UNIT;
 
   return (
-    <g transform={`translate(${dx} ${dy})`}>
+    <g
+      transform={`translate(${dx} ${dy})`}
+      className={dimmed ? "piece-dimmed" : undefined}
+    >
       <defs>
         <clipPath id={clipId}>
           <path d={path} />

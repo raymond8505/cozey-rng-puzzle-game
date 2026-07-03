@@ -19,6 +19,15 @@
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  /* Drag-heavy UI: never let a click/drag start a text selection instead. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Images (target thumbnail, compare) shouldn't ghost-drag on press. */
+img {
+  -webkit-user-drag: none;
 }
 
 html,

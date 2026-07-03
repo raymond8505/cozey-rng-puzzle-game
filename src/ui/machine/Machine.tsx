@@ -2,12 +2,11 @@ import { useGame } from "../store";
 import { legalActions, machineSpeedMs } from "@/game/selectors";
 import { MachineWindow } from "./MachineWindow";
 import { CardSlot } from "./CardSlot";
-import { HeldToken } from "../dnd/HeldToken";
 
-/** The Machine appliance: a bay holding the chosen (drawn/lifted) piece, a
- *  display window, and a card slot with an indicator light, plus a free speed
- *  toggle and the DRAW button. The bay keeps the chosen piece inside the
- *  machine row instead of a separate tray, so cards stay on screen. */
+/** The Machine appliance: a display window + a card slot with an indicator
+ *  light, a free speed toggle, and the DRAW button. The chosen (drawn/lifted)
+ *  piece lives in the window itself (its `chosen` state) rather than a
+ *  separate tray, so cards stay on screen while routing. */
 export function Machine() {
   const state = useGame((s) => s.state);
   const dispatch = useGame((s) => s.dispatch);
@@ -24,9 +23,6 @@ export function Machine() {
   return (
     <section className="machine" aria-label="The Machine">
       <div className="machine-body">
-        <div className="held-bay" aria-label="Chosen piece — drag it onto the board or queue">
-          <HeldToken />
-        </div>
         <MachineWindow state={state} />
         <CardSlot />
       </div>

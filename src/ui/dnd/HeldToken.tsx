@@ -23,6 +23,11 @@ export function HeldToken() {
   return (
     <motion.div
       className="held-token"
+      // Pop in where the window's cycling sprite was — the window itself
+      // signals the chosen state (see .machine-window.chosen).
+      initial={{ scale: 0.7, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 320, damping: 26 }}
       drag
       dragSnapToOrigin
       dragMomentum={false}

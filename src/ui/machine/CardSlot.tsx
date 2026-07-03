@@ -4,7 +4,7 @@ import { legalActions } from "@/game/selectors";
 import { CARD_META } from "../cards/cardMeta";
 
 /** The Machine's card slot: a card-shaped pocket that reads as a drop target
- *  ("CARD ▾"), glows while a card can be played, and seats a played card. The
+ *  ("Place card here"), glows while a card can be played, and seats a played card. The
  *  seated card itself is blank; its name reads out on a plate under the
  *  pocket (the plate replaced the old indicator light). */
 export function CardSlot() {
@@ -31,7 +31,7 @@ export function CardSlot() {
             />
           )}
         </AnimatePresence>
-        {seated === null && <span className="card-slot-hint">CARD&nbsp;▾</span>}
+        {seated === null && <span className="card-slot-hint">Place card here</span>}
       </div>
       <div className="card-slot-name" role="status" aria-label="Played card">
         {seated !== null ? CARD_META[seated].name : ""}

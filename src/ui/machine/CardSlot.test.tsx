@@ -24,11 +24,11 @@ describe("CardSlot name readout", () => {
     expect(pocket.textContent).toBe(""); // blank card back — no name on the card
   });
 
-  it("shows an empty plate and the CARD hint while nothing is seated", () => {
+  it("shows an empty plate and the drop hint while nothing is seated", () => {
     useGame.setState({ state: makeState(), seatedCard: null });
     render(<CardSlot />);
 
     expect(screen.getByRole("status", { name: "Played card" }).textContent).toBe("");
-    expect(screen.getByText(/CARD/)).toBeTruthy();
+    expect(screen.getByText(/place card here/i)).toBeTruthy();
   });
 });

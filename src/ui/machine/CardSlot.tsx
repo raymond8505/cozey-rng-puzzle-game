@@ -31,7 +31,15 @@ export function CardSlot() {
             />
           )}
         </AnimatePresence>
-        {seated === null && <span className="card-slot-hint">Place card here</span>}
+        {seated === null && (
+          <span className="card-slot-hint">
+            Place
+            <br />
+            card
+            <br />
+            here
+          </span>
+        )}
       </div>
       <div className="card-slot-name" role="status" aria-label="Played card">
         {seated !== null ? CARD_META[seated].name : ""}

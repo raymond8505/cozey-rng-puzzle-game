@@ -202,6 +202,15 @@ button {
     box-shadow 0.2s ease,
     background 0.2s ease;
 }
+/* While cycling, the window doubles as a draw control (a real <button>):
+   clicking the displayed piece draws it. Resets keep it visually identical
+   to the plain div window. */
+button.machine-window {
+  padding: 0;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
 /* chosen state: a piece was drawn/lifted and waits in the window to be
    dragged out. Green = "act now", matching the slot-invite language.
    overflow must be visible or the drag would clip at the window edge. */

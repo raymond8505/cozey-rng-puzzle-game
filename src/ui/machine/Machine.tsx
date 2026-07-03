@@ -24,7 +24,10 @@ export function Machine() {
     <section className="machine" aria-label="The Machine">
       <div className="machine-columns">
         <div className="machine-col-main">
-          <MachineWindow state={state} />
+          <MachineWindow
+            state={state}
+            onDraw={la.canDraw ? () => dispatch({ type: "DRAW" }) : undefined}
+          />
 
           <div className="machine-controls">
             <button

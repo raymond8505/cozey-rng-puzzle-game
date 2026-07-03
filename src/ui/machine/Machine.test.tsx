@@ -6,8 +6,9 @@
 // the routing hint, including the forced full-queue variant.
 
 import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { reduce } from "@/game/reducer";
+import { currentDisplayedPiece } from "@/game/selectors";
 import { makeState } from "@/fixtures/game.fixture";
 import { useGame } from "../store";
 import { Machine } from "./Machine";
@@ -43,5 +44,30 @@ describe("Machine chosen-piece window", () => {
     expect(win.classList.contains("chosen")).toBe(false);
     expect(win.querySelector(".held-token")).toBeNull();
     expect(screen.queryByText(/drag onto the board/i)).toBeNull();
+  });
+});
+
+// While cycling, the window itself is a draw control: clicking the displayed
+// piece captures it, same as the Draw button. Once a piece is held the window
+// is display-only again (its content is dragged, not clicked).
+describe("Machine window click-to-draw", () => {
+  it("clicking the cycling window draws the displayed piece", () => {
+    const s = makeState();
+    useGame.setState({ state: s });
+    const displayed = currentDisplayedPiece(s);
+
+    render(<Machine />);
+    fireEvent.click(screen.getByRole("button", { name: /draw the displayed piece/i }));
+
+    const after = useGame.getState().state;
+    expect(after.held?.piece).toBe(displayed);
+    expect(after.phase).toBe("routing");
+  });
+
+  it("is not clickable once a piece is held", () => {
+    useGame.setState({ state: reduce(makeState(), { type: "DRAW" }) });
+
+    render(<Machine />);
+    expect(screen.queryByRole("button", { name: /draw the displayed piece/i })).toBeNull();
   });
 });

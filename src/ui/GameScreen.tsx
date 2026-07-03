@@ -7,7 +7,6 @@ import { TargetThumbnail } from "./board/TargetThumbnail";
 import { Machine } from "./machine/Machine";
 import { Queue } from "./queue/Queue";
 import { Hand } from "./cards/Hand";
-import { Toast } from "./cards/Toast";
 import { CrowbarPrompt } from "./cards/CrowbarPrompt";
 import { EndScreen } from "./end/EndScreen";
 import { DevPanel } from "./dev/DevPanel";
@@ -29,7 +28,6 @@ export function GameScreen() {
 
   return (
     <main className="app">
-      <Toast />
       <header className="app-header">
         <div>
           <h1 className="app-title">PUNCHCARD</h1>

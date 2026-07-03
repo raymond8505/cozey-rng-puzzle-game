@@ -6,7 +6,10 @@ import { reduce } from "@/game/reducer";
 import { Rng, shuffle, hashSeed } from "@/game/rng";
 import { mintSeed, readSeed } from "./seed";
 import { PUZZLES, nextPuzzleIndex } from "./puzzles";
-import { messageForResult, type CardToast } from "./cards/cardMessage";
+import { messageForResult } from "./cards/cardMessage";
+import { CARD_META } from "./cards/cardMeta";
+import { logForTransition, LOG_CAP } from "./statusLog";
+import type { LogEntry, LogLine } from "./statusLog";
 
 /** Build a fresh game for a given puzzle, applying that puzzle's grid as a
  *  per-run board override on top of the global config. The run's seed is
@@ -35,17 +38,13 @@ const bootState = devFill
     }
   : boot;
 
-/** How long a card-play toast shows. The seated card itself is not on a
- *  timer: it stays in the slot until a tile is chosen (see dispatch). */
-const TOAST_MS = 1600;
-
 interface GameStore {
   state: GameState;
   /** Which puzzle is in play, and its image source. */
   puzzleIndex: number;
   puzzleSrc: string;
-  /** Transient card-play feedback. */
-  toast: CardToast | null;
+  /** Console-style status history rendered by the StatusWindow. */
+  log: LogEntry[];
   seatedCard: CardType | null;
   /** Crowbar instanceId awaiting a lift target (board piece), else null. */
   pendingCrowbar: number | null;
@@ -58,7 +57,7 @@ interface GameStore {
   /** Dev: start a fresh game on a specific puzzle. */
   selectPuzzle: (index: number) => void;
 
-  /** Play a non-crowbar card: dispatch, then surface the seat + toast. */
+  /** Play a non-crowbar card: dispatch, then seat it and log the outcome. */
   playCard: (instanceId: number) => void;
   /** Arm crowbar to await a board target (board non-empty). Arming is not
    *  cancellable — a played card cannot be unplayed — so it only clears by
@@ -66,7 +65,6 @@ interface GameStore {
   armCrowbar: (instanceId: number) => void;
   /** Resolve crowbar: lift `cell` (or no-effect when omitted / board empty). */
   playCrowbar: (instanceId: number, cell?: CellIndex) => void;
-  dismissToast: () => void;
 
   /** Dev-only: overwrite the board directly to eyeball rendering. */
   devSetBoard: (board: readonly (PieceId | null)[]) => void;
@@ -76,35 +74,60 @@ interface GameStore {
   devRemoveCard: (instanceId: number) => void;
 }
 
-let toastTimer: ReturnType<typeof setTimeout> | undefined;
+// Monotonic log-entry ids: unique React keys even across a same-frame
+// clear-and-append, so never reset on new game.
+let nextLogId = 0;
 
-export const useGame = create<GameStore>((set, get) => {
-  const surface = (card: CardType) => {
-    const result = get().state.lastCardResult;
-    const toast = result ? messageForResult(get().state.config, result) : null;
-    set({ seatedCard: card, toast });
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => set({ toast: null }), TOAST_MS);
+const appendLog = (log: readonly LogEntry[], lines: readonly LogLine[]): LogEntry[] =>
+  lines.length === 0
+    ? (log as LogEntry[])
+    : [...log, ...lines.map((l) => ({ id: nextLogId++, ...l }))].slice(-LOG_CAP);
+
+export const useGame = create<GameStore>((set) => {
+  /** Reduce + transition hints + seat lifecycle, shared by every action that
+   *  funnels through the game reducer. `extra` reads the post-reduce state
+   *  (for lastCardResult); its lines log ahead of the transition hints. */
+  const applyAction = (
+    s: GameStore,
+    action: GameAction,
+    extra?: (next: GameState) => readonly LogLine[],
+  ): Partial<GameStore> => {
+    const state = reduce(s.state, action);
+    const log = appendLog(s.log, [
+      ...(extra ? extra(state) : []),
+      ...logForTransition(s.state, state),
+    ]);
+    // A tile just got chosen (drawn or second-look kept): the played
+    // card has done its job, so the slot clears.
+    const tileChosen = s.state.held === null && state.held !== null;
+    return tileChosen ? { state, log, seatedCard: null } : { state, log };
   };
 
-  const freshFeedback = { toast: null, seatedCard: null, pendingCrowbar: null };
+  /** Outcome line for a just-reduced card play, if it produced a result. */
+  const resultLines = (state: GameState): LogLine[] =>
+    state.lastCardResult ? [messageForResult(state.config, state.lastCardResult)] : [];
+
+  /** The played-card announcement plus its outcome line, in reading order. */
+  const playLines = (card: CardType, state: GameState): LogLine[] => [
+    { tone: "info", text: `Played ${CARD_META[card].name}.` },
+    ...resultLines(state),
+  ];
+
+  const freshFeedback = {
+    seatedCard: null,
+    pendingCrowbar: null,
+    log: [] as LogEntry[],
+  };
 
   return {
     state: bootState,
     puzzleIndex: BOOT_INDEX,
     puzzleSrc: PUZZLES[BOOT_INDEX].src,
-    toast: null,
+    log: [],
     seatedCard: null,
     pendingCrowbar: null,
 
-    dispatch: (action) =>
-      set((s) => {
-        const state = reduce(s.state, action);
-        // A tile just got chosen (drawn or second-look kept): the played
-        // card has done its job, so the slot and nameplate clear.
-        const tileChosen = s.state.held === null && state.held !== null;
-        return tileChosen ? { state, seatedCard: null } : { state };
-      }),
+    dispatch: (action) => set((s) => applyAction(s, action)),
     restart: (seed) =>
       set((s) => ({
         state: newGame(s.puzzleIndex, seed ?? s.state.config.rng.seed),
@@ -121,20 +144,40 @@ export const useGame = create<GameStore>((set, get) => {
         };
       }),
 
-    playCard: (instanceId) => {
-      const card = get().state.hand.find((c) => c.instanceId === instanceId);
-      if (!card) return;
-      set((s) => ({ state: reduce(s.state, { type: "PLAY_CARD", instanceId }) }));
-      surface(card.type);
-    },
+    playCard: (instanceId) =>
+      set((s) => {
+        const card = s.state.hand.find((c) => c.instanceId === instanceId);
+        if (!card) return {};
+        return {
+          ...applyAction(s, { type: "PLAY_CARD", instanceId }, (next) =>
+            playLines(card.type, next),
+          ),
+          seatedCard: card.type,
+        };
+      }),
 
-    armCrowbar: (instanceId) => set({ pendingCrowbar: instanceId }),
+    armCrowbar: (instanceId) =>
+      set((s) => ({
+        pendingCrowbar: instanceId,
+        log: appendLog(s.log, [
+          { tone: "info", text: "Played Crowbar." },
+          { tone: "info", text: "Tap a placed piece to pry it loose." },
+        ]),
+      })),
 
-    playCrowbar: (instanceId, cell) => {
-      set((s) => ({ state: reduce(s.state, { type: "PLAY_CROWBAR", instanceId, cell }) }));
-      set({ pendingCrowbar: null });
-      surface("crowbar");
-    },
+    playCrowbar: (instanceId, cell) =>
+      set((s) => {
+        // The armed path already announced the play at arm time; only the
+        // direct no-effect play (empty board, never armed) announces here.
+        const announced = s.pendingCrowbar !== null;
+        return {
+          ...applyAction(s, { type: "PLAY_CROWBAR", instanceId, cell }, (next) =>
+            announced ? resultLines(next) : playLines("crowbar", next),
+          ),
+          pendingCrowbar: null,
+          seatedCard: "crowbar",
+        };
+      }),
 
     selectPuzzle: (index) =>
       set(() => ({
@@ -143,8 +186,6 @@ export const useGame = create<GameStore>((set, get) => {
         state: newGame(index, mintSeed()),
         ...freshFeedback,
       })),
-
-    dismissToast: () => set({ toast: null }),
 
     devSetBoard: (board) =>
       set((s) => ({ state: { ...s.state, board, pool: [], queue: [], held: null } })),

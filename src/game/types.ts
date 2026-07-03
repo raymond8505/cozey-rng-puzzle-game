@@ -185,7 +185,7 @@ export interface GameState {
   readonly secondLook: SecondLookState;
   readonly rng: RngState;
 
-  /** Latest card play outcome, for the UI toast. */
+  /** Latest card play outcome, for the UI status log. */
   readonly lastCardResult: CardPlayResult | null;
   readonly lastRejection: RejectionCode | null;
   readonly turnCount: number;

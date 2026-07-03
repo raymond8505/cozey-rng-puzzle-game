@@ -8,7 +8,7 @@ describe("messageForResult", () => {
   it("maps effect results to their confirmation copy", () => {
     const r: CardPlayResult = { kind: "effect", card: "governor", effect: "governorSpeed" };
     expect(messageForResult(GAME_CONFIG, r)).toEqual({
-      message: EFFECT_TOAST.governorSpeed,
+      text: EFFECT_TOAST.governorSpeed,
       tone: "effect",
     });
   });
@@ -24,8 +24,8 @@ describe("messageForResult", () => {
       const r: CardPlayResult = { kind: "noEffect", card: "crowbar", reasonCode };
       const out = messageForResult(GAME_CONFIG, r);
       expect(out.tone).toBe("noEffect");
-      expect(out.message).toBe(GAME_CONFIG.copy.noEffect[key]);
-      expect(out.message.length).toBeGreaterThan(0);
+      expect(out.text).toBe(GAME_CONFIG.copy.noEffect[key]);
+      expect(out.text.length).toBeGreaterThan(0);
     }
   });
 });

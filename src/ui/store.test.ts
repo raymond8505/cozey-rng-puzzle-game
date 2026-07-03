@@ -1,7 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { useGame } from "./store";
 import { PUZZLES } from "./puzzles";
 import { edgeSignature } from "@/fixtures/game.fixture";
+import { GAME_CONFIG } from "@/config/game.config";
+import { EFFECT_TOAST } from "./cards/cardMeta";
+import { LOG_CAP } from "./statusLog";
 
 // Guards the per-puzzle-grid + alternate-on-Play-Again wiring: each puzzle's
 // board must actually drive the game it starts, and Play Again must advance to
@@ -77,8 +80,8 @@ describe("per-game seeding", () => {
   });
 });
 
-// The seated card is NOT on a timer: it stays in the slot (and on the
-// nameplate) until a tile is chosen. Only the toast expires by itself.
+// The seated card is NOT on a timer: it stays in the slot until a tile is
+// chosen. All feedback about the play lives in the status log.
 describe("seated card lifecycle", () => {
   /** Fresh game with a single governor in hand, played into the slot. */
   function playGovernor() {
@@ -88,23 +91,70 @@ describe("seated card lifecycle", () => {
     useGame.getState().playCard(99);
   }
 
-  it("toast expires on its timer while the card stays seated", () => {
-    vi.useFakeTimers();
+  it("seats the card and logs the play, outcome, and governed speed in order", () => {
     playGovernor();
     expect(useGame.getState().seatedCard).toBe("governor");
-    expect(useGame.getState().toast).not.toBeNull();
-
-    vi.advanceTimersByTime(5000);
-    expect(useGame.getState().toast).toBeNull();
-    expect(useGame.getState().seatedCard).toBe("governor"); // still seated
-    vi.useRealTimers();
+    expect(useGame.getState().log.map(({ tone, text }) => ({ tone, text }))).toEqual([
+      { tone: "info", text: "Played Governor." },
+      { tone: "effect", text: EFFECT_TOAST.governorSpeed },
+      {
+        tone: "info",
+        text: `Governor: running at ${GAME_CONFIG.machine.comfortableMs}ms this draw.`,
+      },
+    ]);
   });
 
-  it("clears the seat when a tile is chosen (DRAW)", () => {
+  it("clears the seat when a tile is chosen (DRAW), logging the routing hint", () => {
     playGovernor();
     useGame.getState().dispatch({ type: "DRAW" });
     expect(useGame.getState().state.held).not.toBeNull();
     expect(useGame.getState().seatedCard).toBeNull();
+    expect(useGame.getState().log.at(-1)?.text).toBe(
+      "Drag onto the board, or into the queue to park.",
+    );
+  });
+});
+
+// The status log is the single feedback surface: card plays, outcomes, and
+// hints all append here, capped, and reset with the game they narrate.
+describe("status log", () => {
+  it("arming the crowbar announces the play and the lift prompt", () => {
+    useGame.getState().restart("log-test");
+    useGame.getState().armCrowbar(1);
+    expect(useGame.getState().log.map((l) => l.text)).toEqual([
+      "Played Crowbar.",
+      "Tap a placed piece to pry it loose.",
+    ]);
+  });
+
+  it("an unarmed crowbar play (empty board) announces itself with the no-effect reason", () => {
+    useGame.getState().restart("log-test");
+    useGame.getState().devAddCard("crowbar");
+    const id = useGame.getState().state.hand[0].instanceId;
+    useGame.getState().playCrowbar(id);
+    expect(useGame.getState().log.map(({ tone, text }) => ({ tone, text }))).toEqual([
+      { tone: "info", text: "Played Crowbar." },
+      { tone: "noEffect", text: GAME_CONFIG.copy.noEffect.crowbar },
+    ]);
+  });
+
+  it("caps the history at LOG_CAP, keeping the newest lines", () => {
+    useGame.getState().restart("log-test");
+    // armCrowbar appends unconditionally, so it's a cheap line generator.
+    for (let i = 0; i < LOG_CAP; i++) useGame.getState().armCrowbar(i);
+    const log = useGame.getState().log;
+    expect(log).toHaveLength(LOG_CAP);
+    expect(log.at(-1)?.text).toBe("Tap a placed piece to pry it loose.");
+    // ids stay unique after trimming (they never reset)
+    expect(new Set(log.map((l) => l.id)).size).toBe(LOG_CAP);
+  });
+
+  it("clears on restart — every line narrates run-local state", () => {
+    useGame.getState().restart("log-test");
+    useGame.getState().dispatch({ type: "DRAW" });
+    expect(useGame.getState().log).not.toHaveLength(0);
+    useGame.getState().restart("log-test");
+    expect(useGame.getState().log).toEqual([]);
   });
 });
 

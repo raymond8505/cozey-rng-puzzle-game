@@ -39,9 +39,10 @@ export const CARD_META: Readonly<Record<CardType, CardMeta>> = {
 
 /** Brief confirmation shown when an effect goes live (dry, factual). */
 export const EFFECT_TOAST: Readonly<Record<CardEffectKind, string>> = {
-  governorSpeed: "Governor engaged — comfortable speed this draw.",
-  filterEdge: "Edge Punch — the Machine now shows edge pieces.",
-  filterNeighbor: "Neighbor Punch — the Machine now shows bordering pieces.",
-  secondLookArmed: "Second Look — draw up to twice, keep either.",
-  crowbarLift: "Pried loose — route the piece.",
+  governorSpeed: "Comfortable speed this draw.",
+  filterEdge: "The Machine now only shows edge tiles.",
+  filterNeighbor:
+    "The Machine now only shows tiles neighbouring tiles on the board",
+  secondLookArmed: "Draw two, pick one.",
+  crowbarLift: "Take a tile from the board, park or replace it in a new spot",
 };

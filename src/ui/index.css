@@ -168,8 +168,10 @@ button {
   box-shadow: var(--shadow-soft);
 }
 
-/* two columns: window + controls (3/4) | card slot with its nameplate (1/4) */
-.machine-columns {
+/* top row, two columns: tile window (3/4, left-aligned) | card slot with its
+   nameplate stacked and centered (1/4). Transport controls sit on their own
+   centered row below (.machine-controls). */
+.machine-top {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -178,15 +180,14 @@ button {
 .machine-col-main {
   flex: 3;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+  justify-content: flex-start;
 }
 .machine-col-side {
   flex: 1;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .machine-window {
@@ -216,10 +217,32 @@ button.machine-window {
    overflow must be visible or the drag would clip at the window edge. */
 .machine-window.chosen {
   overflow: visible;
-  background: #38402f;
+  background: #2f5236;
   box-shadow:
     inset 0 2px 10px rgba(0, 0, 0, 0.55),
     0 0 12px 2px rgba(111, 191, 115, 0.55);
+}
+/* Second Look: the window itself expands horizontally to show the captures
+   (beside the still-cycling reel while the second draw is open) — no separate
+   tray section. */
+.machine-window.choices {
+  width: auto;
+  min-width: 84px;
+  padding: 0 10px;
+  grid-auto-flow: column;
+  gap: 10px;
+}
+/* a piece rendered inside the choices window; captures are click-to-keep */
+.window-piece {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.window-piece.capture {
+  filter: drop-shadow(0 0 6px rgba(111, 191, 115, 0.6));
 }
 
 .machine-sprite {
@@ -402,12 +425,6 @@ button.machine-window {
   height: 100%;
 }
 
-/* --- routing tray --- */
-.routing-hint {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--ink);
-}
 .held-token {
   width: 72px;
   height: 72px;
@@ -470,48 +487,6 @@ button.machine-window {
   box-shadow: var(--shadow-soft);
   aspect-ratio: 6 / 4;
   object-fit: cover;
-}
-
-/* --- second look chooser --- */
-.secondlook-tray {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.6rem;
-  background: rgba(201, 138, 94, 0.14);
-  border: 1px solid var(--accent);
-  border-radius: 12px;
-}
-.secondlook-choices {
-  display: flex;
-  gap: 1.25rem;
-  justify-content: center;
-}
-.secondlook-choice {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-}
-.secondlook-sprite {
-  width: 68px;
-  height: 68px;
-  filter: drop-shadow(0 3px 5px rgba(58, 51, 44, 0.3));
-}
-.keep-btn {
-  min-height: 40px;
-  padding: 0.3rem 1.1rem;
-  border: none;
-  border-radius: 10px;
-  background: var(--accent-deep);
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-.keep-btn:active {
-  transform: translateY(1px);
 }
 
 /* --- cards / hand --- */

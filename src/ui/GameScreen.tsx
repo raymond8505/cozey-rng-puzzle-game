@@ -9,7 +9,6 @@ import { Queue } from "./queue/Queue";
 import { Hand } from "./cards/Hand";
 import { Toast } from "./cards/Toast";
 import { CrowbarPrompt } from "./cards/CrowbarPrompt";
-import { SecondLookTray } from "./routing/SecondLookTray";
 import { EndScreen } from "./end/EndScreen";
 import { DevPanel } from "./dev/DevPanel";
 
@@ -51,7 +50,6 @@ export function GameScreen() {
       />
       <CrowbarPrompt />
       <Queue />
-      <SecondLookTray />
       <Machine />
       <Hand />
 

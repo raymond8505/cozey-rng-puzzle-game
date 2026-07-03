@@ -4,7 +4,7 @@ import { PUZZLES } from "./puzzles";
 import { edgeSignature } from "@/fixtures/game.fixture";
 import { GAME_CONFIG } from "@/config/game.config";
 import { EFFECT_TOAST } from "./cards/cardMeta";
-import { DRAW_PROMPT, LOG_CAP } from "./statusLog";
+import { LOG_CAP } from "./statusLog";
 
 // Guards the per-puzzle-grid + alternate-on-Play-Again wiring: each puzzle's
 // board must actually drive the game it starts, and Play Again must advance to
@@ -95,7 +95,7 @@ describe("seated card lifecycle", () => {
     playGovernor();
     expect(useGame.getState().seatedCard).toBe("governor");
     expect(useGame.getState().log.map(({ tone, text }) => ({ tone, text }))).toEqual([
-      DRAW_PROMPT,
+      { tone: "info", text: "Draw a tile." },
       { tone: "info", text: "Played Governor." },
       { tone: "effect", text: EFFECT_TOAST.governorSpeed },
       {
@@ -123,7 +123,7 @@ describe("status log", () => {
     useGame.getState().restart("log-test");
     useGame.getState().armCrowbar(1);
     expect(useGame.getState().log.map((l) => l.text)).toEqual([
-      DRAW_PROMPT.text,
+      "Draw a tile.",
       "Played Crowbar.",
       "Tap a placed piece to pry it loose.",
     ]);
@@ -135,7 +135,7 @@ describe("status log", () => {
     const id = useGame.getState().state.hand[0].instanceId;
     useGame.getState().playCrowbar(id);
     expect(useGame.getState().log.map(({ tone, text }) => ({ tone, text }))).toEqual([
-      DRAW_PROMPT,
+      { tone: "info", text: "Draw a tile." },
       { tone: "info", text: "Played Crowbar." },
       { tone: "noEffect", text: GAME_CONFIG.copy.noEffect.crowbar },
     ]);
@@ -158,7 +158,7 @@ describe("status log", () => {
     expect(useGame.getState().log.length).toBeGreaterThan(1);
     useGame.getState().restart("log-test");
     expect(useGame.getState().log.map(({ tone, text }) => ({ tone, text }))).toEqual([
-      DRAW_PROMPT,
+      { tone: "info", text: "Draw a tile." },
     ]);
   });
 
@@ -166,7 +166,15 @@ describe("status log", () => {
     useGame.getState().restart("log-test");
     useGame.getState().dispatch({ type: "DRAW" });
     useGame.getState().dispatch({ type: "PARK" });
-    expect(useGame.getState().log.at(-1)?.text).toBe(DRAW_PROMPT.text);
+    expect(useGame.getState().log.at(-1)?.text).toBe("Draw a tile.");
+  });
+
+  it("offers the card slot in the prompt while the hand holds a card", () => {
+    useGame.getState().restart("log-test");
+    useGame.getState().devAddCard("edgePunch");
+    useGame.getState().dispatch({ type: "DRAW" });
+    useGame.getState().dispatch({ type: "PARK" });
+    expect(useGame.getState().log.at(-1)?.text).toBe("Draw a tile, or insert a card.");
   });
 });
 

@@ -3,7 +3,7 @@
 // that used to render as persistent conditional UI (machine notes, prompts).
 
 import type { GameState } from "@/game/types";
-import { machineSpeedMs } from "@/game/selectors";
+import { legalActions, machineSpeedMs } from "@/game/selectors";
 
 /** "effect" (green) / "noEffect" (tan) mirror the old toast tones; "info" is
  *  the neutral tone for hints and announcements. */
@@ -25,8 +25,16 @@ export interface LogEntry extends LogLine {
 export const LOG_CAP = 100;
 
 /** Turn-start prompt: logged at game start and whenever a finished turn
- *  returns the game to a state that expects a draw. */
-export const DRAW_PROMPT: LogLine = { tone: "info", text: "Draw a tile." };
+ *  returns the game to a state that expects a draw. Offers the card slot
+ *  only while a card can actually be inserted. */
+export function drawPrompt(state: GameState): LogLine {
+  return {
+    tone: "info",
+    text: legalActions(state).canPlayCard
+      ? "Draw a tile, or insert a card."
+      : "Draw a tile.",
+  };
+}
 
 /** Derive hint lines from a reducer transition. Each condition fires on the
  *  state EDGE (e.g. held null→non-null), not the level, so a hint logs once
@@ -79,7 +87,7 @@ export function logForTransition(prev: GameState, next: GameState): LogLine[] {
     next.phase === "idle" &&
     next.pool.length > 0
   ) {
-    lines.push(DRAW_PROMPT);
+    lines.push(drawPrompt(next));
   }
 
   return lines;

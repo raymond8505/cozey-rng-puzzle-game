@@ -7,7 +7,7 @@ import { reduce } from "@/game/reducer";
 import { asCellIndex } from "@/game/types";
 import type { GameState } from "@/game/types";
 import { makeState, applyAll } from "@/fixtures/game.fixture";
-import { logForTransition, DRAW_PROMPT } from "./statusLog";
+import { logForTransition } from "./statusLog";
 
 /** Fresh idle state holding exactly one card of the given type. */
 function withCard(type: "governor" | "secondLook"): GameState {
@@ -79,15 +79,27 @@ describe("logForTransition", () => {
   });
 
   it("prompts the next draw when a turn ends back in idle", () => {
+    // PARK, not PLACE: parking draws no card, so the hand stays empty and
+    // the prompt has no card slot to offer.
     const routing = reduce(makeState(), { type: "DRAW" });
-    for (const action of [
-      { type: "PLACE", cell: asCellIndex(0) } as const,
-      { type: "PARK" } as const,
-    ]) {
-      const next = reduce(routing, action);
-      expect(next.phase).toBe("idle");
-      expect(logForTransition(routing, next)).toEqual([DRAW_PROMPT]);
-    }
+    const next = reduce(routing, { type: "PARK" });
+    expect(next.phase).toBe("idle");
+
+    expect(logForTransition(routing, next)).toEqual([
+      { tone: "info", text: "Draw a tile." },
+    ]);
+  });
+
+  it("offers the card slot in the prompt when a card is in hand", () => {
+    // A placement pays out a card (the economy), so the very next prompt
+    // already offers the slot.
+    const routing = reduce(makeState(), { type: "DRAW" });
+    const next = reduce(routing, { type: "PLACE", cell: asCellIndex(0) });
+    expect(next.hand.length).toBeGreaterThan(0);
+
+    expect(logForTransition(routing, next)).toEqual([
+      { tone: "info", text: "Draw a tile, or insert a card." },
+    ]);
   });
 
   it("prompts after an Action-B queue placement too — any finished turn counts", () => {
@@ -99,7 +111,10 @@ describe("logForTransition", () => {
     });
     expect(next.turnCount).toBe(parked.turnCount + 1);
 
-    expect(logForTransition(parked, next)).toEqual([DRAW_PROMPT]);
+    // the queue placement drew a card, so this prompt offers the slot too
+    expect(logForTransition(parked, next)).toEqual([
+      { tone: "info", text: "Draw a tile, or insert a card." },
+    ]);
   });
 
   it("does not prompt a draw when the pool ran dry", () => {

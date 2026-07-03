@@ -8,7 +8,7 @@ import { mintSeed, readSeed } from "./seed";
 import { PUZZLES, nextPuzzleIndex } from "./puzzles";
 import { messageForResult } from "./cards/cardMessage";
 import { CARD_META } from "./cards/cardMeta";
-import { logForTransition, DRAW_PROMPT, LOG_CAP } from "./statusLog";
+import { logForTransition, drawPrompt, LOG_CAP } from "./statusLog";
 import type { LogEntry, LogLine } from "./statusLog";
 
 /** Build a fresh game for a given puzzle, applying that puzzle's grid as a
@@ -119,7 +119,7 @@ export const useGame = create<GameStore>((set) => {
   const freshFeedback = (state: GameState) => ({
     seatedCard: null,
     pendingCrowbar: null,
-    log: appendLog([], state.pool.length > 0 ? [DRAW_PROMPT] : []),
+    log: appendLog([], state.pool.length > 0 ? [drawPrompt(state)] : []),
   });
 
   return {

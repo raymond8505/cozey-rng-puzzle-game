@@ -515,6 +515,9 @@ button {
 }
 
 .card-wrap {
+  /* flex so .card stretches to the row's tallest card — equal heights
+     without a magic number that could clip the longest blurb */
+  display: flex;
   cursor: grab;
   touch-action: none;
 }

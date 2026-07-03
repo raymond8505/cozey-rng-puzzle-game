@@ -14,7 +14,7 @@ export const cellCount = (s: GameState): number =>
   s.config.board.cols * s.config.board.rows;
 
 export const queueCapacity = (s: GameState): number =>
-  Math.ceil(s.config.queue.capacityRatio * cellCount(s));
+  Math.floor(s.config.queue.capacityRatio * cellCount(s));
 
 export const isQueueFull = (s: GameState): boolean =>
   s.queue.length >= queueCapacity(s);

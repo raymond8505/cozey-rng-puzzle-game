@@ -25,18 +25,18 @@ function fillQueue(state: GameState): GameState {
 }
 
 describe("derived queue capacity", () => {
-  it("defaults to ceil(1/8 * 35) = 5 for 7x5", () => {
-    expect(queueCapacity(makeState())).toBe(5);
+  it("defaults to floor(0.1 * 35) = 3 for 7x5", () => {
+    expect(queueCapacity(makeState())).toBe(3);
   });
 
-  it("is derived, not hardcoded (5x5 @ ratio 1/4 => 7)", () => {
+  it("is derived, not hardcoded (5x5 @ ratio 1/4 => 6)", () => {
     const s = makeState(makeConfig({ board: { cols: 5, rows: 5 }, queue: { capacityRatio: 0.25 } }));
-    expect(queueCapacity(s)).toBe(7);
+    expect(queueCapacity(s)).toBe(6);
   });
 
-  it("follows a tiny board (4x3 @ 1/8 => ceil(1.5) = 2)", () => {
+  it("follows a tiny board (4x3 @ 0.1 => floor(1.2) = 1)", () => {
     const s = makeState(makeConfig({ board: { cols: 4, rows: 3 } }));
-    expect(queueCapacity(s)).toBe(2);
+    expect(queueCapacity(s)).toBe(1);
   });
 });
 

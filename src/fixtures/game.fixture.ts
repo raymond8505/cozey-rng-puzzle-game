@@ -34,11 +34,14 @@ export function makeState(config: GameConfig = GAME_CONFIG, seed?: string): Game
   return createInitialState(seed ?? config.rng.seed, config);
 }
 
-/** Pinned 6x4 board for tests whose expectations encode grid math
- *  (specific cell indices, 24-cell counts, queue capacity 3). Keeps those
- *  tests stable when the shipped default board is retuned. */
+/** Pinned 6x4 board (and 1/8 queue ratio) for tests whose expectations encode
+ *  grid math (specific cell indices, 24-cell counts, queue capacity 3). Keeps
+ *  those tests stable when the shipped defaults are retuned. */
 export function makeState6x4(seed?: string): GameState {
-  return makeState(makeConfig({ board: { cols: 6, rows: 4 } }), seed);
+  return makeState(
+    makeConfig({ board: { cols: 6, rows: 4 }, queue: { capacityRatio: 0.125 } }),
+    seed,
+  );
 }
 
 /** Stable signature of every piece's edge geometry (per home cell), for

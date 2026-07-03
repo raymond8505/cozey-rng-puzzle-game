@@ -48,14 +48,15 @@ export interface GameConfig {
 export const GAME_CONFIG: GameConfig = {
   board: { cols: 7, rows: 5 },
   machine: { fastMs: 90, slowMs: 2600, comfortableMs: 750 },
-  queue: { capacityRatio: 0.125 },
+  queue: { capacityRatio: 0.1 },
   hand: { capacity: 3, openingSize: 0 },
+  // Governor is out of the shipped rotation (its type, effect, and UI remain
+  // playable) — its 4 slots went to extra crowbars.
   deck: [
-    { card: "governor", count: 4 },
     { card: "edgePunch", count: 3 },
     { card: "neighborPunch", count: 3 },
     { card: "secondLook", count: 2 },
-    { card: "crowbar", count: 3 },
+    { card: "crowbar", count: 7 },
   ],
   scoring: {
     tiers: [

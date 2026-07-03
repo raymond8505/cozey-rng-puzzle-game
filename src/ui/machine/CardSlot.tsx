@@ -5,7 +5,8 @@ import { CARD_META } from "../cards/cardMeta";
 
 /** The Machine's card slot: a card-shaped pocket that reads as a drop target
  *  ("CARD ▾"), glows while a card can be played, seats a played card, and lights
- *  green when the effect is live (§2.5). */
+ *  green when the effect is live (§2.5). The seated card itself is blank; its
+ *  name reads out on a plate beside the pocket. */
 export function CardSlot() {
   const seated = useGame((s) => s.seatedCard);
   const effectLive = useGame(
@@ -21,21 +22,25 @@ export function CardSlot() {
       data-drop="slot"
       aria-label="Card slot — drop a card here"
     >
-      <div className="card-slot-pocket">
-        <AnimatePresence>
-          {seated !== null && (
-            <motion.div
-              className="seated-card"
-              initial={{ y: -30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 8, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 320, damping: 26 }}
-            >
-              {CARD_META[seated].name}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {seated === null && <span className="card-slot-hint">CARD&nbsp;▾</span>}
+      <div className="card-slot-row">
+        <div className="card-slot-pocket">
+          <AnimatePresence>
+            {seated !== null && (
+              <motion.div
+                className="seated-card"
+                aria-hidden
+                initial={{ y: -30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 8, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 320, damping: 26 }}
+              />
+            )}
+          </AnimatePresence>
+          {seated === null && <span className="card-slot-hint">CARD&nbsp;▾</span>}
+        </div>
+        <div className="card-slot-name" role="status" aria-label="Played card">
+          {seated !== null ? CARD_META[seated].name : ""}
+        </div>
       </div>
       <div className="slot-light-row">
         <div className={live ? "slot-light on" : "slot-light"} aria-hidden />

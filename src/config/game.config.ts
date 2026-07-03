@@ -39,6 +39,9 @@ export interface GameConfig {
   readonly copy: {
     readonly noEffect: Readonly<Record<NoEffectCopyKey, string>>;
   };
+  /** Deterministic fallback seed (tests, non-browser contexts). Interactive
+   *  runs mint a random seed per game (src/ui/seed.ts) and carry it here so
+   *  restart can reproduce the run. */
   readonly rng: { readonly seed: string };
 }
 

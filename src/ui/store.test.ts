@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { useGame } from "./store";
 import { PUZZLES } from "./puzzles";
+import { edgeSignature } from "@/fixtures/game.fixture";
 
 // Guards the per-puzzle-grid + alternate-on-Play-Again wiring: each puzzle's
 // board must actually drive the game it starts, and Play Again must advance to
@@ -43,6 +44,36 @@ describe("store puzzles", () => {
     useGame.getState().restart("seed-x");
     expect(useGame.getState().puzzleIndex).toBe(before);
     expect(useGame.getState().state.config.board).toEqual(PUZZLES[before].board);
+  });
+});
+
+// Every fresh game mints its own seed, so the same home cell gets different
+// edge shapes run to run; restart() still reproduces the CURRENT run because
+// newGame carries the run's seed into config.rng (previously it always fell
+// back to the global default seed, so restart never actually reproduced).
+describe("per-game seeding", () => {
+  it("selectPuzzle starts each run with fresh piece shapes", () => {
+    useGame.getState().selectPuzzle(1);
+    const first = edgeSignature(useGame.getState().state);
+    useGame.getState().selectPuzzle(1);
+    expect(edgeSignature(useGame.getState().state)).not.toBe(first);
+  });
+
+  it("playAgain mints a fresh seed for each visit to the same puzzle", () => {
+    useGame.getState().playAgain();
+    const firstVisitSeed = useGame.getState().state.config.rng.seed;
+    for (let i = 0; i < PUZZLES.length; i++) useGame.getState().playAgain();
+    expect(useGame.getState().state.config.rng.seed).not.toBe(firstVisitSeed);
+  });
+
+  it("restart without a seed reproduces the current run", () => {
+    useGame.getState().selectPuzzle(0);
+    const before = useGame.getState().state;
+    useGame.getState().restart();
+    const after = useGame.getState().state;
+    expect(edgeSignature(after)).toBe(edgeSignature(before));
+    expect(after.pool).toEqual(before.pool);
+    expect(after.hand).toEqual(before.hand);
   });
 });
 

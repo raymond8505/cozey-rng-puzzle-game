@@ -41,6 +41,12 @@ export function makeState6x4(seed?: string): GameState {
   return makeState(makeConfig({ board: { cols: 6, rows: 4 } }), seed);
 }
 
+/** Stable signature of every piece's edge geometry (per home cell), for
+ *  same-shapes / different-shapes assertions across runs. */
+export function edgeSignature(state: GameState): string {
+  return JSON.stringify(state.pieces.map((p) => p.edges));
+}
+
 /** Reduce a scripted list of actions. */
 export function applyAll(state: GameState, actions: readonly GameAction[]): GameState {
   return actions.reduce(reduce, state);

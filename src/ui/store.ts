@@ -4,15 +4,16 @@ import type { GameState, GameAction, PieceId, CardType, CellIndex } from "@/game
 import { createInitialState } from "@/game/init";
 import { reduce } from "@/game/reducer";
 import { Rng, shuffle, hashSeed } from "@/game/rng";
-import { readSeed } from "./seed";
+import { mintSeed, readSeed } from "./seed";
 import { PUZZLES, nextPuzzleIndex } from "./puzzles";
 import { messageForResult, type CardToast } from "./cards/cardMessage";
 
 /** Build a fresh game for a given puzzle, applying that puzzle's grid as a
- *  per-run board override on top of the global config. */
+ *  per-run board override on top of the global config. The run's seed is
+ *  carried in config.rng so restart() can reproduce this exact run. */
 function newGame(puzzleIndex: number, seed: string): GameState {
   const puzzle = PUZZLES[puzzleIndex];
-  return createInitialState(seed, { ...GAME_CONFIG, board: puzzle.board });
+  return createInitialState(seed, { ...GAME_CONFIG, board: puzzle.board, rng: { seed } });
 }
 
 const BOOT_INDEX = 0;
@@ -110,7 +111,7 @@ export const useGame = create<GameStore>((set, get) => {
         return {
           puzzleIndex,
           puzzleSrc: PUZZLES[puzzleIndex].src,
-          state: newGame(puzzleIndex, `play-${s.state.turnCount}-${s.puzzleIndex}`),
+          state: newGame(puzzleIndex, mintSeed()),
           ...freshFeedback,
         };
       }),
@@ -134,7 +135,7 @@ export const useGame = create<GameStore>((set, get) => {
       set(() => ({
         puzzleIndex: index,
         puzzleSrc: PUZZLES[index].src,
-        state: newGame(index, `pick-${index}`),
+        state: newGame(index, mintSeed()),
         ...freshFeedback,
       })),
 

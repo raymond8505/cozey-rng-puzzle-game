@@ -34,8 +34,9 @@ const bootState = devFill
     }
   : boot;
 
-/** How long a played card sits seated in the slot / its toast shows. */
-const SEAT_MS = 1600;
+/** How long a card-play toast shows. The seated card itself is not on a
+ *  timer: it stays in the slot until a tile is chosen (see dispatch). */
+const TOAST_MS = 1600;
 
 interface GameStore {
   state: GameState;
@@ -69,15 +70,15 @@ interface GameStore {
   devSetBoard: (board: readonly (PieceId | null)[]) => void;
 }
 
-let seatTimer: ReturnType<typeof setTimeout> | undefined;
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
 export const useGame = create<GameStore>((set, get) => {
   const surface = (card: CardType) => {
     const result = get().state.lastCardResult;
     const toast = result ? messageForResult(get().state.config, result) : null;
     set({ seatedCard: card, toast });
-    clearTimeout(seatTimer);
-    seatTimer = setTimeout(() => set({ seatedCard: null, toast: null }), SEAT_MS);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => set({ toast: null }), TOAST_MS);
   };
 
   const freshFeedback = { toast: null, seatedCard: null, pendingCrowbar: null };
@@ -90,7 +91,14 @@ export const useGame = create<GameStore>((set, get) => {
     seatedCard: null,
     pendingCrowbar: null,
 
-    dispatch: (action) => set((s) => ({ state: reduce(s.state, action) })),
+    dispatch: (action) =>
+      set((s) => {
+        const state = reduce(s.state, action);
+        // A tile just got chosen (drawn or second-look kept): the played
+        // card has done its job, so the slot and nameplate clear.
+        const tileChosen = s.state.held === null && state.held !== null;
+        return tileChosen ? { state, seatedCard: null } : { state };
+      }),
     restart: (seed) =>
       set((s) => ({
         state: newGame(s.puzzleIndex, seed ?? s.state.config.rng.seed),

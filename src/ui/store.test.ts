@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { useGame } from "./store";
 import { PUZZLES } from "./puzzles";
 
@@ -43,5 +43,36 @@ describe("store puzzles", () => {
     useGame.getState().restart("seed-x");
     expect(useGame.getState().puzzleIndex).toBe(before);
     expect(useGame.getState().state.config.board).toEqual(PUZZLES[before].board);
+  });
+});
+
+// The seated card is NOT on a timer: it stays in the slot (and on the
+// nameplate) until a tile is chosen. Only the toast expires by itself.
+describe("seated card lifecycle", () => {
+  /** Fresh game with a single governor in hand, played into the slot. */
+  function playGovernor() {
+    useGame.getState().restart("seat-test");
+    const s = useGame.getState().state;
+    useGame.setState({ state: { ...s, hand: [{ instanceId: 99, type: "governor" }] } });
+    useGame.getState().playCard(99);
+  }
+
+  it("toast expires on its timer while the card stays seated", () => {
+    vi.useFakeTimers();
+    playGovernor();
+    expect(useGame.getState().seatedCard).toBe("governor");
+    expect(useGame.getState().toast).not.toBeNull();
+
+    vi.advanceTimersByTime(5000);
+    expect(useGame.getState().toast).toBeNull();
+    expect(useGame.getState().seatedCard).toBe("governor"); // still seated
+    vi.useRealTimers();
+  });
+
+  it("clears the seat when a tile is chosen (DRAW)", () => {
+    playGovernor();
+    useGame.getState().dispatch({ type: "DRAW" });
+    expect(useGame.getState().state.held).not.toBeNull();
+    expect(useGame.getState().seatedCard).toBeNull();
   });
 });

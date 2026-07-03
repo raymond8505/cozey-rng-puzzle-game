@@ -407,8 +407,23 @@ button.machine-window {
   color: #e8d9c6;
   text-align: left;
 }
+.status-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* each entry is a list item led by a caret, so separate messages read as
+   separate rows even when a long line wraps (the wrap hangs past the caret) */
 .status-line {
   margin: 0;
+  position: relative;
+  padding-left: 0.9em;
+}
+.status-line::before {
+  content: "▸" / ""; /* decorative — empty alt keeps it out of screen readers */
+  position: absolute;
+  left: 0;
+  opacity: 0.55; /* inherits the line's tone color, dimmed */
 }
 .status-info {
   opacity: 0.9;

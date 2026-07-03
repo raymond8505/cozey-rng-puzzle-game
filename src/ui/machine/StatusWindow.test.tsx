@@ -20,12 +20,12 @@ const LOG: LogEntry[] = [
 ];
 
 describe("StatusWindow", () => {
-  it("renders every log line in order inside the log region", () => {
+  it("renders every log line in order, as list items inside the log region", () => {
     useGame.setState({ log: LOG });
     render(<StatusWindow />);
 
     const region = screen.getByRole("log", { name: "Machine status" });
-    const lines = [...region.querySelectorAll(".status-line")];
+    const lines = [...region.querySelectorAll("ul.status-list > li.status-line")];
     expect(lines.map((l) => l.textContent)).toEqual(LOG.map((e) => e.text));
   });
 

@@ -28,11 +28,13 @@ export function StatusWindow() {
       role="log"
       aria-label="Machine status"
     >
-      {log.map((e) => (
-        <p key={e.id} className={`status-line status-${e.tone}`}>
-          {e.text}
-        </p>
-      ))}
+      <ul className="status-list">
+        {log.map((e) => (
+          <li key={e.id} className={`status-line status-${e.tone}`}>
+            {e.text}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

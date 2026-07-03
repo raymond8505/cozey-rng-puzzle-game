@@ -4,16 +4,12 @@ import { legalActions } from "@/game/selectors";
 import { CARD_META } from "../cards/cardMeta";
 
 /** The Machine's card slot: a card-shaped pocket that reads as a drop target
- *  ("CARD ▾"), glows while a card can be played, seats a played card, and lights
- *  green when the effect is live (§2.5). The seated card itself is blank; its
- *  name reads out on a plate beside the pocket. */
+ *  ("CARD ▾"), glows while a card can be played, and seats a played card. The
+ *  seated card itself is blank; its name reads out on a plate beside the
+ *  pocket (the plate replaced the old indicator light). */
 export function CardSlot() {
   const seated = useGame((s) => s.seatedCard);
-  const effectLive = useGame(
-    (s) => s.state.machine.filter.kind !== "none" || s.state.machine.governorActive,
-  );
   const canPlay = useGame((s) => legalActions(s.state).canPlayCard);
-  const live = seated !== null || effectLive;
   const inviting = canPlay && seated === null;
 
   return (
@@ -41,9 +37,6 @@ export function CardSlot() {
         <div className="card-slot-name" role="status" aria-label="Played card">
           {seated !== null ? CARD_META[seated].name : ""}
         </div>
-      </div>
-      <div className="slot-light-row">
-        <div className={live ? "slot-light on" : "slot-light"} aria-hidden />
       </div>
     </div>
   );

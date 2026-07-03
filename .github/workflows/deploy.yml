@@ -71,7 +71,7 @@ jobs:
             # Health check — wait up to 60s for the container to respond
             echo "Waiting for container..."
             for i in $(seq 1 12); do
-              docker exec puzzle wget -q --spider http://localhost/ && \
+              docker exec puzzle wget -q --spider http://127.0.0.1/ && \
                 echo "Health check passed!" && break || true
               if [ "$i" = "12" ]; then
                 echo "Health check failed after 60s — recent logs:"

@@ -35,3 +35,6 @@ yarn-error.log*
 
 # test / coverage
 coverage
+
+# codegraph (machine-local generated index)
+.codegraph/

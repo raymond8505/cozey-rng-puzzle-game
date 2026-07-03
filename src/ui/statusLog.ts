@@ -24,6 +24,10 @@ export interface LogEntry extends LogLine {
 /** History cap so a long session can't grow memory / DOM unboundedly. */
 export const LOG_CAP = 100;
 
+/** Turn-start prompt: logged at game start and whenever a finished turn
+ *  returns the game to a state that expects a draw. */
+export const DRAW_PROMPT: LogLine = { tone: "info", text: "Draw a tile." };
+
 /** Derive hint lines from a reducer transition. Each condition fires on the
  *  state EDGE (e.g. held null→non-null), not the level, so a hint logs once
  *  when it becomes relevant instead of re-rendering while it holds. */
@@ -65,6 +69,17 @@ export function logForTransition(prev: GameState, next: GameState): LogLine[] {
       tone: "info",
       text: `Governor: running at ${machineSpeedMs(next)}ms this draw.`,
     });
+  }
+
+  // A turn just ended (place, park, swap, or queue placement) back into idle:
+  // prompt the next draw — unless the pool is dry (then only queue placements
+  // remain) or the game ended (turn end can also land on gameOver).
+  if (
+    next.turnCount > prev.turnCount &&
+    next.phase === "idle" &&
+    next.pool.length > 0
+  ) {
+    lines.push(DRAW_PROMPT);
   }
 
   return lines;

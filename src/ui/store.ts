@@ -8,7 +8,7 @@ import { mintSeed, readSeed } from "./seed";
 import { PUZZLES, nextPuzzleIndex } from "./puzzles";
 import { messageForResult } from "./cards/cardMessage";
 import { CARD_META } from "./cards/cardMeta";
-import { logForTransition, LOG_CAP } from "./statusLog";
+import { logForTransition, DRAW_PROMPT, LOG_CAP } from "./statusLog";
 import type { LogEntry, LogLine } from "./statusLog";
 
 /** Build a fresh game for a given puzzle, applying that puzzle's grid as a
@@ -113,34 +113,36 @@ export const useGame = create<GameStore>((set) => {
     ...resultLines(state),
   ];
 
-  const freshFeedback = {
+  /** Feedback reset for a fresh game: empty seat and prompt state, log
+   *  opening with the draw prompt (unless the board starts with a dry pool,
+   *  e.g. the dev quick-fill boot). */
+  const freshFeedback = (state: GameState) => ({
     seatedCard: null,
     pendingCrowbar: null,
-    log: [] as LogEntry[],
-  };
+    log: appendLog([], state.pool.length > 0 ? [DRAW_PROMPT] : []),
+  });
 
   return {
     state: bootState,
     puzzleIndex: BOOT_INDEX,
     puzzleSrc: PUZZLES[BOOT_INDEX].src,
-    log: [],
-    seatedCard: null,
-    pendingCrowbar: null,
+    ...freshFeedback(bootState),
 
     dispatch: (action) => set((s) => applyAction(s, action)),
     restart: (seed) =>
-      set((s) => ({
-        state: newGame(s.puzzleIndex, seed ?? s.state.config.rng.seed),
-        ...freshFeedback,
-      })),
+      set((s) => {
+        const state = newGame(s.puzzleIndex, seed ?? s.state.config.rng.seed);
+        return { state, ...freshFeedback(state) };
+      }),
     playAgain: () =>
       set((s) => {
         const puzzleIndex = nextPuzzleIndex(s.puzzleIndex);
+        const state = newGame(puzzleIndex, mintSeed());
         return {
           puzzleIndex,
           puzzleSrc: PUZZLES[puzzleIndex].src,
-          state: newGame(puzzleIndex, mintSeed()),
-          ...freshFeedback,
+          state,
+          ...freshFeedback(state),
         };
       }),
 
@@ -180,12 +182,15 @@ export const useGame = create<GameStore>((set) => {
       }),
 
     selectPuzzle: (index) =>
-      set(() => ({
-        puzzleIndex: index,
-        puzzleSrc: PUZZLES[index].src,
-        state: newGame(index, mintSeed()),
-        ...freshFeedback,
-      })),
+      set(() => {
+        const state = newGame(index, mintSeed());
+        return {
+          puzzleIndex: index,
+          puzzleSrc: PUZZLES[index].src,
+          state,
+          ...freshFeedback(state),
+        };
+      }),
 
     devSetBoard: (board) =>
       set((s) => ({ state: { ...s.state, board, pool: [], queue: [], held: null } })),

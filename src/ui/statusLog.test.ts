@@ -4,9 +4,10 @@
 
 import { describe, it, expect } from "vitest";
 import { reduce } from "@/game/reducer";
+import { asCellIndex } from "@/game/types";
 import type { GameState } from "@/game/types";
 import { makeState, applyAll } from "@/fixtures/game.fixture";
-import { logForTransition } from "./statusLog";
+import { logForTransition, DRAW_PROMPT } from "./statusLog";
 
 /** Fresh idle state holding exactly one card of the given type. */
 function withCard(type: "governor" | "secondLook"): GameState {
@@ -75,6 +76,40 @@ describe("logForTransition", () => {
         text: `Governor: running at ${prev.config.machine.comfortableMs}ms this draw.`,
       },
     ]);
+  });
+
+  it("prompts the next draw when a turn ends back in idle", () => {
+    const routing = reduce(makeState(), { type: "DRAW" });
+    for (const action of [
+      { type: "PLACE", cell: asCellIndex(0) } as const,
+      { type: "PARK" } as const,
+    ]) {
+      const next = reduce(routing, action);
+      expect(next.phase).toBe("idle");
+      expect(logForTransition(routing, next)).toEqual([DRAW_PROMPT]);
+    }
+  });
+
+  it("prompts after an Action-B queue placement too — any finished turn counts", () => {
+    const parked = applyAll(makeState(), [{ type: "DRAW" }, { type: "PARK" }]);
+    const next = reduce(parked, {
+      type: "PLACE_FROM_QUEUE",
+      queued: parked.queue[0],
+      cell: asCellIndex(0),
+    });
+    expect(next.turnCount).toBe(parked.turnCount + 1);
+
+    expect(logForTransition(parked, next)).toEqual([DRAW_PROMPT]);
+  });
+
+  it("does not prompt a draw when the pool ran dry", () => {
+    const routing = reduce(makeState(), { type: "DRAW" });
+    const placed = reduce(routing, { type: "PLACE", cell: asCellIndex(0) });
+    // Synthesize the dry pool: only the fields the helper reads must cohere,
+    // and draining a full board organically would end the game instead.
+    const next = { ...placed, pool: [] };
+
+    expect(logForTransition(routing, next)).toEqual([]);
   });
 
   it("stays silent for routine machine actions", () => {

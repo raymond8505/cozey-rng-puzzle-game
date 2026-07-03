@@ -22,38 +22,43 @@ export function Machine() {
 
   return (
     <section className="machine" aria-label="The Machine">
-      <div className="machine-body">
-        <MachineWindow state={state} />
-        <CardSlot />
-      </div>
+      <div className="machine-columns">
+        <div className="machine-col-main">
+          <MachineWindow state={state} />
 
-      <div className="machine-controls">
-        <div className="speed-toggle" role="group" aria-label="Machine speed">
-          <button
-            className={!isFast ? "speed-btn active" : "speed-btn"}
-            aria-pressed={!isFast}
-            disabled={!la.canToggleSpeed || governor}
-            onClick={() => setFast(false)}
-          >
-            Slow
-          </button>
-          <button
-            className={isFast ? "speed-btn active" : "speed-btn"}
-            aria-pressed={isFast}
-            disabled={!la.canToggleSpeed || governor}
-            onClick={() => setFast(true)}
-          >
-            Fast
-          </button>
+          <div className="machine-controls">
+            <div className="speed-toggle" role="group" aria-label="Machine speed">
+              <button
+                className={!isFast ? "speed-btn active" : "speed-btn"}
+                aria-pressed={!isFast}
+                disabled={!la.canToggleSpeed || governor}
+                onClick={() => setFast(false)}
+              >
+                Slow
+              </button>
+              <button
+                className={isFast ? "speed-btn active" : "speed-btn"}
+                aria-pressed={isFast}
+                disabled={!la.canToggleSpeed || governor}
+                onClick={() => setFast(true)}
+              >
+                Fast
+              </button>
+            </div>
+
+            <button
+              className="draw-btn"
+              disabled={!la.canDraw}
+              onClick={() => dispatch({ type: "DRAW" })}
+            >
+              {state.phase === "secondLook" ? "Draw again" : "Draw"}
+            </button>
+          </div>
         </div>
 
-        <button
-          className="draw-btn"
-          disabled={!la.canDraw}
-          onClick={() => dispatch({ type: "DRAW" })}
-        >
-          {state.phase === "secondLook" ? "Draw again" : "Draw"}
-        </button>
+        <div className="machine-col-side">
+          <CardSlot />
+        </div>
       </div>
 
       {held !== null && (

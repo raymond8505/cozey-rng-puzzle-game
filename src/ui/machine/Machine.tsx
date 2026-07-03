@@ -27,6 +27,14 @@ export function Machine() {
           <MachineWindow state={state} />
 
           <div className="machine-controls">
+            <button
+              className="draw-btn"
+              disabled={!la.canDraw}
+              onClick={() => dispatch({ type: "DRAW" })}
+            >
+              {state.phase === "secondLook" ? "Draw again" : "Draw"}
+            </button>
+
             <div className="speed-toggle" role="group" aria-label="Machine speed">
               <button
                 className={!isFast ? "speed-btn active" : "speed-btn"}
@@ -45,14 +53,6 @@ export function Machine() {
                 Fast
               </button>
             </div>
-
-            <button
-              className="draw-btn"
-              disabled={!la.canDraw}
-              onClick={() => dispatch({ type: "DRAW" })}
-            >
-              {state.phase === "secondLook" ? "Draw again" : "Draw"}
-            </button>
           </div>
         </div>
 

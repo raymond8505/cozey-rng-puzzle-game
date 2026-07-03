@@ -1,19 +1,19 @@
 import { motion } from "motion/react";
 import { useGame } from "../store";
-import { completeness, scoreTier } from "@/game/selectors";
+import { completeness, scoreTier, gridDims } from "@/game/selectors";
 import { Board } from "../board/Board";
-import puzzleUrl from "@/assets/puzzle.jpg";
 
 /** Shown when every cell is filled: the player's board beside the target, with
- *  completeness and a score-tier slogan. Play again reseeds a fresh run. */
+ *  completeness and a score-tier slogan. Play again alternates to the next
+ *  puzzle. */
 export function EndScreen() {
   const state = useGame((s) => s.state);
-  const restart = useGame((s) => s.restart);
+  const puzzleSrc = useGame((s) => s.puzzleSrc);
+  const playAgain = useGame((s) => s.playAgain);
 
   const pct = Math.round(completeness(state));
   const { slogan } = scoreTier(state);
-
-  const playAgain = () => restart(`play-${Date.now()}`);
+  const dims = gridDims(state);
 
   return (
     <motion.main
@@ -38,7 +38,12 @@ export function EndScreen() {
           <figcaption>Yours</figcaption>
         </figure>
         <figure className="compare-item">
-          <img src={puzzleUrl} alt="Target picture" className="compare-target" />
+          <img
+            src={puzzleSrc}
+            alt="Target picture"
+            className="compare-target"
+            style={{ aspectRatio: `${dims.cols} / ${dims.rows}` }}
+          />
           <figcaption>Target</figcaption>
         </figure>
       </div>

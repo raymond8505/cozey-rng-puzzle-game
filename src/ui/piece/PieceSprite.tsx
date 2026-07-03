@@ -2,7 +2,7 @@ import { useId } from "react";
 import type { Piece } from "@/game/types";
 import type { GridDims } from "@/game/grid";
 import { colOf, rowOf } from "@/game/grid";
-import puzzleUrl from "@/assets/puzzle.jpg";
+import { useGame } from "../store";
 import { homePiecePath, UNIT } from "../board/piecePath";
 
 interface PieceSpriteProps {
@@ -18,6 +18,7 @@ interface PieceSpriteProps {
  *  the drag token, and the queue. */
 export function PieceSprite({ piece, dims, pad = 0.32, className }: PieceSpriteProps) {
   const clipId = useId();
+  const puzzleSrc = useGame((s) => s.puzzleSrc);
   const x0 = colOf(piece.home, dims) * UNIT;
   const y0 = rowOf(piece.home, dims) * UNIT;
   const p = pad * UNIT;
@@ -36,7 +37,7 @@ export function PieceSprite({ piece, dims, pad = 0.32, className }: PieceSpriteP
       </defs>
       <g clipPath={`url(#${clipId})`}>
         <image
-          href={puzzleUrl}
+          href={puzzleSrc}
           x={0}
           y={0}
           width={dims.cols * UNIT}

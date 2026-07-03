@@ -1,7 +1,7 @@
 import type { GameState } from "@/game/types";
 import { asCellIndex } from "@/game/types";
 import { gridDims } from "@/game/selectors";
-import puzzleUrl from "@/assets/puzzle.jpg";
+import { useGame } from "../store";
 import { UNIT } from "./piecePath";
 import { PieceView } from "./PieceView";
 import { EmptyCell } from "./EmptyCell";
@@ -24,6 +24,7 @@ export function Board({
   onLiftCell,
 }: BoardProps) {
   const dims = gridDims(state);
+  const puzzleSrc = useGame((s) => s.puzzleSrc);
   const boardW = dims.cols * UNIT;
   const boardH = dims.rows * UNIT;
 
@@ -48,7 +49,7 @@ export function Board({
               piece={state.pieces[occupant]}
               cell={asCellIndex(cell)}
               dims={dims}
-              imageHref={puzzleUrl}
+              imageHref={puzzleSrc}
             />
           ),
         )}

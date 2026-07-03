@@ -1,12 +1,22 @@
 import { create } from "zustand";
+import { GAME_CONFIG } from "@/config/game.config";
 import type { GameState, GameAction, PieceId, CardType, CellIndex } from "@/game/types";
 import { createInitialState } from "@/game/init";
 import { reduce } from "@/game/reducer";
 import { Rng, shuffle, hashSeed } from "@/game/rng";
 import { readSeed } from "./seed";
+import { PUZZLES, nextPuzzleIndex } from "./puzzles";
 import { messageForResult, type CardToast } from "./cards/cardMessage";
 
-const boot = createInitialState(readSeed());
+/** Build a fresh game for a given puzzle, applying that puzzle's grid as a
+ *  per-run board override on top of the global config. */
+function newGame(puzzleIndex: number, seed: string): GameState {
+  const puzzle = PUZZLES[puzzleIndex];
+  return createInitialState(seed, { ...GAME_CONFIG, board: puzzle.board });
+}
+
+const BOOT_INDEX = 0;
+const boot = newGame(BOOT_INDEX, readSeed());
 // Dev-only quick-fill for eyeballing the board render (#correct / #shuffled).
 const devHash = typeof window !== "undefined" ? window.location.hash : "";
 const devFill =
@@ -29,6 +39,9 @@ const SEAT_MS = 1600;
 
 interface GameStore {
   state: GameState;
+  /** Which puzzle is in play, and its image source. */
+  puzzleIndex: number;
+  puzzleSrc: string;
   /** Transient card-play feedback. */
   toast: CardToast | null;
   seatedCard: CardType | null;
@@ -36,7 +49,10 @@ interface GameStore {
   pendingCrowbar: number | null;
 
   dispatch: (action: GameAction) => void;
+  /** Restart the SAME puzzle (dev reseed / manual). */
   restart: (seed?: string) => void;
+  /** Play again: alternate to the next puzzle with a fresh seed. */
+  playAgain: () => void;
 
   /** Play a non-crowbar card: dispatch, then surface the seat + toast. */
   playCard: (instanceId: number) => void;
@@ -62,8 +78,12 @@ export const useGame = create<GameStore>((set, get) => {
     seatTimer = setTimeout(() => set({ seatedCard: null, toast: null }), SEAT_MS);
   };
 
+  const freshFeedback = { toast: null, seatedCard: null, pendingCrowbar: null };
+
   return {
     state: bootState,
+    puzzleIndex: BOOT_INDEX,
+    puzzleSrc: PUZZLES[BOOT_INDEX].src,
     toast: null,
     seatedCard: null,
     pendingCrowbar: null,
@@ -71,11 +91,19 @@ export const useGame = create<GameStore>((set, get) => {
     dispatch: (action) => set((s) => ({ state: reduce(s.state, action) })),
     restart: (seed) =>
       set((s) => ({
-        state: createInitialState(seed ?? s.state.config.rng.seed, s.state.config),
-        toast: null,
-        seatedCard: null,
-        pendingCrowbar: null,
+        state: newGame(s.puzzleIndex, seed ?? s.state.config.rng.seed),
+        ...freshFeedback,
       })),
+    playAgain: () =>
+      set((s) => {
+        const puzzleIndex = nextPuzzleIndex(s.puzzleIndex);
+        return {
+          puzzleIndex,
+          puzzleSrc: PUZZLES[puzzleIndex].src,
+          state: newGame(puzzleIndex, `play-${s.state.turnCount}-${s.puzzleIndex}`),
+          ...freshFeedback,
+        };
+      }),
 
     playCard: (instanceId) => {
       const card = get().state.hand.find((c) => c.instanceId === instanceId);

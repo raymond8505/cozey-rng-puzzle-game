@@ -1,34 +1,45 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useGame } from "../store";
+import { legalActions } from "@/game/selectors";
 import { CARD_META } from "../cards/cardMeta";
 
-/** The Machine's card slot and indicator light. A card dragged here seats
- *  (slides in), the light turns green, and the effect goes live (§2.5). */
+/** The Machine's card slot: a card-shaped pocket that reads as a drop target
+ *  ("CARD ▾"), glows while a card can be played, seats a played card, and lights
+ *  green when the effect is live (§2.5). */
 export function CardSlot() {
   const seated = useGame((s) => s.seatedCard);
   const effectLive = useGame(
     (s) => s.state.machine.filter.kind !== "none" || s.state.machine.governorActive,
   );
+  const canPlay = useGame((s) => legalActions(s.state).canPlayCard);
   const live = seated !== null || effectLive;
+  const inviting = canPlay && seated === null;
 
   return (
-    <div className="card-slot" data-drop="slot" aria-label="Card slot">
-      <div className="card-slot-mouth">
+    <div
+      className={inviting ? "card-slot inviting" : "card-slot"}
+      data-drop="slot"
+      aria-label="Card slot — drop a card here"
+    >
+      <div className="card-slot-pocket">
         <AnimatePresence>
           {seated !== null && (
             <motion.div
               className="seated-card"
-              initial={{ y: -26, opacity: 0 }}
+              initial={{ y: -30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 6, opacity: 0 }}
+              exit={{ y: 8, opacity: 0 }}
               transition={{ type: "spring", stiffness: 320, damping: 26 }}
             >
               {CARD_META[seated].name}
             </motion.div>
           )}
         </AnimatePresence>
+        {seated === null && <span className="card-slot-hint">CARD&nbsp;▾</span>}
       </div>
-      <div className={live ? "slot-light on" : "slot-light"} aria-hidden />
+      <div className="slot-light-row">
+        <div className={live ? "slot-light on" : "slot-light"} aria-hidden />
+      </div>
     </div>
   );
 }

@@ -44,7 +44,7 @@ export interface GameConfig {
 
 export const GAME_CONFIG: GameConfig = {
   board: { cols: 6, rows: 4 },
-  machine: { fastMs: 90, slowMs: 1400, comfortableMs: 350 },
+  machine: { fastMs: 90, slowMs: 2600, comfortableMs: 500 },
   queue: { capacityRatio: 0.125 },
   hand: { capacity: 3, openingSize: 3 },
   deck: [

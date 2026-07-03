@@ -8,10 +8,14 @@ import { machineSpeedMs } from "@/game/selectors";
  *  decides *when* it advances. */
 export function useMachineCycle() {
   const dispatch = useGame((s) => s.dispatch);
+  // Spin only when a draw is actually available: plain idle, or second-look
+  // with one draw used (awaiting the optional second). After two draws the
+  // chooser is up and there's nothing left to draw, so stop cycling.
   const spinning = useGame(
     (s) =>
-      (s.state.phase === "idle" || s.state.phase === "secondLook") &&
-      s.state.pool.length > 0,
+      s.state.pool.length > 0 &&
+      (s.state.phase === "idle" ||
+        (s.state.phase === "secondLook" && s.state.secondLook.drawsUsed === 1)),
   );
   const speed = useGame((s) => machineSpeedMs(s.state));
 

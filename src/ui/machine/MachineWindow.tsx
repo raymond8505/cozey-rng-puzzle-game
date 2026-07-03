@@ -16,12 +16,17 @@ export function MachineWindow({
   state,
   onDraw,
   onKeep,
+  awaitingLift = false,
 }: {
   state: GameState;
   /** Present iff drawing is legal right now (the caller gates on legalActions). */
   onDraw?: () => void;
   /** Present iff a Second Look capture can be kept right now. */
   onKeep?: (which: "first" | "second") => void;
+  /** Crowbar is armed at a non-empty board: the window clears (no reel, no
+   *  draw) in anticipation of receiving the pried piece. An empty-board
+   *  crowbar never arms, so the reel keeps cycling in that case. */
+  awaitingLift?: boolean;
 }) {
   const dims = gridDims(state);
   const current = currentDisplayedPiece(state);
@@ -34,6 +39,12 @@ export function MachineWindow({
       >
         <HeldToken />
       </div>
+    );
+  }
+
+  if (awaitingLift) {
+    return (
+      <div className="machine-window awaiting" aria-label="Waiting for the pried piece" />
     );
   }
 

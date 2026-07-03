@@ -140,3 +140,27 @@ describe("Machine second-look window", () => {
     expect(screen.queryByRole("button", { name: /keep this piece/i })).toBeNull();
   });
 });
+
+// While crowbar is armed at a non-empty board (pendingCrowbar set), the window
+// clears in anticipation of the pried piece — no reel, no click-to-draw. An
+// empty-board crowbar play never arms (Card resolves the no-effect directly),
+// so the reel keeps cycling in that case; the idle test above covers it.
+describe("Machine window while crowbar is armed", () => {
+  it("clears the window and stops offering the draw control", () => {
+    useGame.setState({ state: makeState(), pendingCrowbar: 7 });
+
+    const { container } = render(<Machine />);
+    const win = container.querySelector(".machine-window")!;
+    expect(win.classList.contains("awaiting")).toBe(true);
+    expect(win.querySelector("svg")).toBeNull(); // no reel sprite
+    expect(screen.queryByRole("button", { name: /draw the displayed piece/i })).toBeNull();
+  });
+
+  it("resumes the cycling reel once the crowbar is resolved or cancelled", () => {
+    useGame.setState({ state: makeState(), pendingCrowbar: null });
+
+    const { container } = render(<Machine />);
+    expect(container.querySelector(".machine-window.awaiting")).toBeNull();
+    expect(screen.getByRole("button", { name: /draw the displayed piece/i })).toBeTruthy();
+  });
+});

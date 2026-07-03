@@ -11,6 +11,7 @@ import { CardSlot } from "./CardSlot";
 export function Machine() {
   const state = useGame((s) => s.state);
   const dispatch = useGame((s) => s.dispatch);
+  const pendingCrowbar = useGame((s) => s.pendingCrowbar);
   const la = legalActions(state);
 
   const isFast = state.machine.baseSpeedMs === state.config.machine.fastMs;
@@ -34,6 +35,7 @@ export function Machine() {
                 ? (which) => dispatch({ type: "SECOND_LOOK_KEEP", which })
                 : undefined
             }
+            awaitingLift={pendingCrowbar !== null}
           />
         </div>
 

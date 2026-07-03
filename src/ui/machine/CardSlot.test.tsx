@@ -26,9 +26,12 @@ describe("CardSlot name readout", () => {
 
   it("shows an empty plate and the drop hint while nothing is seated", () => {
     useGame.setState({ state: makeState(), seatedCard: null });
-    render(<CardSlot />);
+    const { container } = render(<CardSlot />);
 
     expect(screen.getByRole("status", { name: "Played card" }).textContent).toBe("");
-    expect(screen.getByText(/place card here/i)).toBeTruthy();
+    // The hint breaks one word per line (<br/>), so its textContent has no
+    // spaces between words — match with \s* instead of literal spaces.
+    const hint = container.querySelector(".card-slot-hint");
+    expect(hint?.textContent).toMatch(/place\s*card\s*here/i);
   });
 });

@@ -80,7 +80,7 @@ button {
 }
 
 .target-thumb {
-  object-fit: cover;
+  width: auto; /* height is fixed by the component; keep the source ratio */
   border-radius: 8px;
   box-shadow: var(--shadow-soft);
   border: 2px solid var(--paper);

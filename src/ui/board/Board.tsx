@@ -1,6 +1,6 @@
-import type { GameState } from "@/game/types";
+import type { GameState, PieceId } from "@/game/types";
 import { asCellIndex } from "@/game/types";
-import { gridDims } from "@/game/selectors";
+import { gridDims, isOverlappingPlacement } from "@/game/selectors";
 import { useGame } from "../store";
 import { UNIT } from "./piecePath";
 import { PieceView } from "./PieceView";
@@ -28,6 +28,15 @@ export function Board({
   const boardW = dims.cols * UNIT;
   const boardH = dims.rows * UNIT;
 
+  // A piece is "raised" (overlapping) when it's on the wrong cell AND has a
+  // filled orthogonal neighbor to overlap. Raised pieces render last so they
+  // sit on top and cast their shadow onto the pieces beneath.
+  const placed = state.board
+    .map((occupant, cell) => (occupant === null ? null : { cell, occupant }))
+    .filter((p): p is { cell: number; occupant: PieceId } => p !== null);
+  const flush = placed.filter((p) => !isOverlappingPlacement(state, asCellIndex(p.cell)));
+  const raised = placed.filter((p) => isOverlappingPlacement(state, asCellIndex(p.cell)));
+
   return (
     <div
       className="board-frame"
@@ -41,18 +50,31 @@ export function Board({
         aria-label="Puzzle board"
       >
         {state.board.map((occupant, cell) =>
-          occupant === null ? (
-            <EmptyCell key={cell} piece={state.pieces[cell]} dims={dims} />
-          ) : (
-            <PieceView
-              key={cell}
-              piece={state.pieces[occupant]}
-              cell={asCellIndex(cell)}
-              dims={dims}
-              imageHref={puzzleSrc}
-            />
+          occupant !== null ? null : (
+            <EmptyCell key={`empty-${cell}`} piece={state.pieces[cell]} dims={dims} />
           ),
         )}
+
+        {flush.map(({ cell, occupant }) => (
+          <PieceView
+            key={cell}
+            piece={state.pieces[occupant]}
+            cell={asCellIndex(cell)}
+            dims={dims}
+            imageHref={puzzleSrc}
+          />
+        ))}
+
+        {raised.map(({ cell, occupant }) => (
+          <PieceView
+            key={cell}
+            piece={state.pieces[occupant]}
+            cell={asCellIndex(cell)}
+            dims={dims}
+            imageHref={puzzleSrc}
+            raised
+          />
+        ))}
 
         {dropActive &&
           state.board.map((occupant, cell) =>

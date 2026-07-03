@@ -13,6 +13,7 @@ import type {
 } from "./types";
 import { createInitialState } from "./init";
 import { resolveCard } from "./cards";
+import { Rng, shuffle } from "./rng";
 import {
   isQueueFull,
   queueCapacity,
@@ -39,15 +40,35 @@ function withBoard(
   return board;
 }
 
-/** Card economy: a placement draws the top deck card if there's room. This is
- *  the ONLY card income and must be called after every placement — and never
- *  after a park or a card play. */
+/** Card economy: a placement draws the top deck card if there's room in hand.
+ *  This is the ONLY card income — called after every placement, never after a
+ *  park or a card play. When the deck is empty, the discard is reshuffled back
+ *  into it (seeded per reshuffle count, so runs stay reproducible). If both the
+ *  deck and discard are empty, there's simply nothing to draw. */
 function drawCardIntoHand(state: GameState): GameState {
-  if (state.hand.length >= state.config.hand.capacity || state.deck.length === 0) {
-    return state;
+  if (state.hand.length >= state.config.hand.capacity) return state;
+
+  let deck = state.deck;
+  let discard = state.discard;
+  let reshuffles = state.reshuffles;
+
+  if (deck.length === 0) {
+    if (discard.length === 0) return state; // no cards anywhere
+    reshuffles += 1;
+    deck = shuffle(discard, new Rng(state.rng.numericSeed, reshuffles));
+    discard = [];
   }
-  const [top, ...rest] = state.deck;
-  return { ...state, hand: [...state.hand, top as Card], deck: rest };
+
+  const [top, ...rest] = deck;
+  return { ...state, hand: [...state.hand, top as Card], deck: rest, discard, reshuffles };
+}
+
+/** Move a just-played card from hand to the discard pile. */
+function discardCard(state: GameState, card: Card): Pick<GameState, "hand" | "discard"> {
+  return {
+    hand: state.hand.filter((c) => c.instanceId !== card.instanceId),
+    discard: [...state.discard, card],
+  };
 }
 
 /** Collapse turn-scoped flags and advance to the next turn (or game over). */
@@ -134,10 +155,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
         return reject(s, "illegalInPhase");
 
       const result = resolveCard(s, card.type);
-      const hand = s.hand.filter((c) => c.instanceId !== action.instanceId);
       let next: GameState = {
         ...s,
-        hand,
+        ...discardCard(s, card),
         cardPlayedThisTurn: true,
         lastCardResult: result,
       };
@@ -187,11 +207,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
         const lifted = s.board[cell];
         if (lifted === null) return reject(s, "cellOccupied");
 
-        const hand = s.hand.filter((c) => c.instanceId !== action.instanceId);
         const held = makeHeld(lifted, { kind: "crowbar", fromCell: cell }, s);
         return {
           ...s,
-          hand,
+          ...discardCard(s, card),
           board: withBoard(s, cell, null),
           held,
           phase: "routing",
@@ -202,8 +221,12 @@ export function reduce(state: GameState, action: GameAction): GameState {
 
       // No-effect (board empty): card is still consumed; a normal DRAW remains
       // available this turn.
-      const hand = s.hand.filter((c) => c.instanceId !== action.instanceId);
-      return { ...s, hand, cardPlayedThisTurn: true, lastCardResult: result };
+      return {
+        ...s,
+        ...discardCard(s, card),
+        cardPlayedThisTurn: true,
+        lastCardResult: result,
+      };
     }
 
     // --- Action A: draw ---

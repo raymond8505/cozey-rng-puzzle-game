@@ -46,7 +46,7 @@ export const GAME_CONFIG: GameConfig = {
   board: { cols: 6, rows: 4 },
   machine: { fastMs: 90, slowMs: 2600, comfortableMs: 750 },
   queue: { capacityRatio: 0.125 },
-  hand: { capacity: 3, openingSize: 3 },
+  hand: { capacity: 3, openingSize: 0 },
   deck: [
     { card: "governor", count: 4 },
     { card: "edgePunch", count: 3 },

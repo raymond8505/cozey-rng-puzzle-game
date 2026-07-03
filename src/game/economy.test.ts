@@ -85,22 +85,77 @@ describe("card economy — placements are the only income", () => {
   });
 });
 
+describe("card economy — empty opening hand fills by placing", () => {
+  it("opens with an empty hand; the first placement draws a card", () => {
+    const s = makeState(); // default openingSize 0
+    expect(s.hand).toHaveLength(0);
+    const placed = reduce(reduce(s, { type: "DRAW" }), { type: "PLACE", cell: asCellIndex(0) });
+    expect(placed.hand).toHaveLength(1);
+    expect(placed.deck).toHaveLength(s.deck.length - 1);
+  });
+});
+
+describe("card economy — discard & reshuffle", () => {
+  it("a played card goes to the discard pile", () => {
+    const base = makeState();
+    const s: GameState = { ...base, hand: [{ instanceId: 1, type: "governor" }] };
+    const played = reduce(s, { type: "PLAY_CARD", instanceId: 1 });
+    expect(played.hand).toHaveLength(0);
+    expect(played.discard).toEqual([{ instanceId: 1, type: "governor" }]);
+  });
+
+  it("reshuffles the discard into the deck when the deck empties, then draws", () => {
+    const base = makeState();
+    const s: GameState = {
+      ...base,
+      hand: [],
+      deck: [],
+      discard: [
+        { instanceId: 5, type: "governor" },
+        { instanceId: 6, type: "edgePunch" },
+      ],
+      reshuffles: 0,
+    };
+    const placed = reduce(reduce(s, { type: "DRAW" }), { type: "PLACE", cell: asCellIndex(0) });
+
+    expect(placed.reshuffles).toBe(1);
+    expect(placed.discard).toEqual([]); // discard folded into the deck
+    expect(placed.hand).toHaveLength(1); // one drawn
+    expect(placed.deck).toHaveLength(1); // one left
+    // every discarded card is now accounted for in hand + deck
+    const ids = [...placed.hand, ...placed.deck].map((c) => c.instanceId).sort();
+    expect(ids).toEqual([5, 6]);
+  });
+
+  it("reshuffle order is deterministic for the same seed", () => {
+    const base = makeState();
+    const discard: GameState["discard"] = Array.from({ length: 6 }, (_, i) => ({
+      instanceId: i,
+      type: "governor",
+    }));
+    const craft = (): GameState => ({ ...base, hand: [], deck: [], discard, reshuffles: 0 });
+    const run = () => reduce(reduce(craft(), { type: "DRAW" }), { type: "PLACE", cell: asCellIndex(0) });
+    expect(run().deck).toEqual(run().deck);
+  });
+});
+
 describe("card economy — guards", () => {
   it("does not draw when the hand is already at capacity", () => {
-    const s = makeState(); // default: capacity 3, opening 3 => full
+    const s = makeState(makeConfig({ hand: { capacity: 2, openingSize: 2 } })); // full
     const drawn = reduce(s, { type: "DRAW" });
     const placed = reduce(drawn, { type: "PLACE", cell: asCellIndex(0) });
-    expect(placed.hand).toHaveLength(3);
+    expect(placed.hand).toHaveLength(2);
     expect(placed.deck).toEqual(s.deck);
   });
 
-  it("does not draw when the deck is empty", () => {
+  it("does not draw when both deck and discard are empty", () => {
     const s = makeState(
       makeConfig({ hand: { capacity: 5, openingSize: 2 }, deck: [{ card: "governor", count: 2 }] }),
     );
     expect(s.deck).toHaveLength(0);
+    expect(s.discard).toEqual([]);
     const drawn = reduce(s, { type: "DRAW" });
     const placed = reduce(drawn, { type: "PLACE", cell: asCellIndex(0) });
-    expect(placed.hand).toHaveLength(2); // unchanged, deck was empty
+    expect(placed.hand).toHaveLength(2); // unchanged — nothing to draw anywhere
   });
 });

@@ -13,7 +13,7 @@ describe("turn legality", () => {
     const s = makeState();
     const la = legalActions(s);
     expect(s.phase).toBe("idle");
-    expect(la.canPlayCard).toBe(true);
+    expect(la.canPlayCard).toBe(false); // empty opening hand — nothing to play yet
     expect(la.canDraw).toBe(true);
     expect(la.canPlace).toBe(false);
     expect(la.canPark).toBe(false);

@@ -168,6 +168,12 @@ export interface GameState {
   readonly hand: readonly Card[];
   /** Draw pile; deck[0] is the top card. */
   readonly deck: readonly Card[];
+  /** Played cards. When the deck empties, the discard is reshuffled back into
+   *  it so cards keep cycling (renewable economy). */
+  readonly discard: readonly Card[];
+  /** How many times the discard has been reshuffled — seeds each reshuffle so
+   *  the sequence stays reproducible. */
+  readonly reshuffles: number;
 
   /** Non-null when a piece is awaiting routing. */
   readonly held: HeldPiece | null;

@@ -52,6 +52,8 @@ export function createInitialState(
     queue: [],
     hand,
     deck,
+    discard: [],
+    reshuffles: 0,
     held: null,
     phase: "idle",
     cardPlayedThisTurn: false,

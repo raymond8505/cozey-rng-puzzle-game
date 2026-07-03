@@ -105,8 +105,9 @@ export function legalActions(s: GameState): LegalActions {
   // (place-from-queue) is only available before any card is played this turn.
   const canStartAction = s.phase === "idle" && !s.cardPlayedThisTurn;
   return {
-    canPlayCard: canStartAction,
-    canPlayCrowbar: canStartAction, // crowbar is never blocked; may no-effect
+    canPlayCard: canStartAction && s.hand.length > 0,
+    // crowbar is never blocked once held; may still no-effect on an empty board
+    canPlayCrowbar: canStartAction && s.hand.some((c) => c.type === "crowbar"),
     canDraw:
       (s.phase === "idle" && s.pool.length > 0) ||
       (s.phase === "secondLook" && s.secondLook.drawsUsed === 1 && s.pool.length > 0),

@@ -6,7 +6,12 @@ import { Card } from "./Card";
 export function Hand() {
   const hand = useGame((s) => s.state.hand);
   const capacity = useGame((s) => s.state.config.hand.capacity);
-  const playable = useGame((s) => legalActions(s.state).canPlayCard);
+  // While crowbar awaits its lift target no other card may be played: PLAY_*
+  // needs an un-spent turn, arming is not cancellable, and a second play
+  // would consume the turn the pending lift needs to resolve.
+  const playable = useGame(
+    (s) => legalActions(s.state).canPlayCard && s.pendingCrowbar === null,
+  );
 
   return (
     <section className="hand" aria-label="Your cards">

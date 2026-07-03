@@ -691,14 +691,6 @@ button.machine-window {
   border-radius: 10px;
   font-size: 0.85rem;
 }
-.crowbar-cancel {
-  min-height: 36px;
-  padding: 0.3rem 0.8rem;
-  background: var(--paper);
-  border: 1px solid rgba(74, 63, 53, 0.25);
-  border-radius: 8px;
-  font-size: 0.8rem;
-}
 .cell-lift {
   fill: var(--accent);
   fill-opacity: 0.22;

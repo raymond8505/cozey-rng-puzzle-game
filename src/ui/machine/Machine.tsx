@@ -47,7 +47,10 @@ export function Machine() {
       <div className="machine-controls">
         <button
           className="draw-btn"
-          disabled={!la.canDraw}
+          // Withheld while crowbar awaits its lift target: PLAY_CROWBAR needs
+          // the idle phase, and arming is not cancellable, so drawing mid-arm
+          // could wedge the prompt.
+          disabled={!la.canDraw || pendingCrowbar !== null}
           onClick={() => dispatch({ type: "DRAW" })}
         >
           {secondLook ? "Draw again" : "Draw"}

@@ -60,11 +60,12 @@ interface GameStore {
 
   /** Play a non-crowbar card: dispatch, then surface the seat + toast. */
   playCard: (instanceId: number) => void;
-  /** Arm crowbar to await a board target (board non-empty). */
+  /** Arm crowbar to await a board target (board non-empty). Arming is not
+   *  cancellable — a played card cannot be unplayed — so it only clears by
+   *  resolving (playCrowbar) or starting a fresh game. */
   armCrowbar: (instanceId: number) => void;
   /** Resolve crowbar: lift `cell` (or no-effect when omitted / board empty). */
   playCrowbar: (instanceId: number, cell?: CellIndex) => void;
-  clearPending: () => void;
   dismissToast: () => void;
 
   /** Dev-only: overwrite the board directly to eyeball rendering. */
@@ -143,7 +144,6 @@ export const useGame = create<GameStore>((set, get) => {
         ...freshFeedback,
       })),
 
-    clearPending: () => set({ pendingCrowbar: null }),
     dismissToast: () => set({ toast: null }),
 
     devSetBoard: (board) =>

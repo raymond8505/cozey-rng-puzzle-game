@@ -32,3 +32,21 @@ describe("dev card remove button", () => {
     expect(useGame.getState().state.hand).toEqual([{ instanceId: 42, type: "secondLook" }]);
   });
 });
+
+// Arming crowbar is not cancellable, so while a lift target is awaited no
+// other card may be played — a second play would consume the turn the pending
+// lift needs (PLAY_CROWBAR rejects once cardPlayedThisTurn is set).
+describe("hand while crowbar is armed", () => {
+  it("renders every card unplayable until the lift resolves", () => {
+    const s = makeState();
+    useGame.setState({
+      state: { ...s, hand: [{ instanceId: 41, type: "edgePunch" }] },
+      pendingCrowbar: 7,
+    });
+
+    const { container } = render(<Hand />);
+    expect(container.querySelector(".card-wrap.disabled")).not.toBeNull();
+
+    useGame.setState({ pendingCrowbar: null });
+  });
+});

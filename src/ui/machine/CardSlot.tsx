@@ -1,12 +1,11 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useGame } from "../store";
 import { legalActions } from "@/game/selectors";
-import { CARD_META } from "../cards/cardMeta";
 
 /** The Machine's card slot: a card-shaped pocket that reads as a drop target
- *  ("Place card here"), glows while a card can be played, and seats a played card. The
- *  seated card itself is blank; its name reads out on a plate under the
- *  pocket (the plate replaced the old indicator light). */
+ *  ("Place card here"), glows while a card can be played, and seats a played
+ *  card. The seated card itself is blank; the play is announced by name in
+ *  the status window (which replaced the old nameplate under the pocket). */
 export function CardSlot() {
   const seated = useGame((s) => s.seatedCard);
   const canPlay = useGame((s) => legalActions(s.state).canPlayCard);
@@ -40,9 +39,6 @@ export function CardSlot() {
             here
           </span>
         )}
-      </div>
-      <div className="card-slot-name" role="status" aria-label="Played card">
-        {seated !== null ? CARD_META[seated].name : ""}
       </div>
     </div>
   );

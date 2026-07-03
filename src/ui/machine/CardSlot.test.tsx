@@ -1,34 +1,32 @@
 // @vitest-environment jsdom
 //
-// Wiring guard for the slot's name readout: a seated card's name must appear
-// on the .card-slot-name plate BESIDE the pocket, not on the seated card
-// itself (the card in the pocket is a blank card back).
+// Wiring guard for the slot pocket: a seated card renders as a blank card
+// back (its name is announced in the status window, not printed on the card),
+// and the empty pocket invites a drop.
 
 import { describe, it, expect, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, cleanup } from "@testing-library/react";
 import { makeState } from "@/fixtures/game.fixture";
 import { useGame } from "../store";
 import { CardSlot } from "./CardSlot";
 
 afterEach(cleanup);
 
-describe("CardSlot name readout", () => {
-  it("shows the seated card's name on the plate, not inside the pocket", () => {
+describe("CardSlot pocket", () => {
+  it("seats a blank card back — no name inside the pocket", () => {
     useGame.setState({ state: makeState(), seatedCard: "neighborPunch" });
     const { container } = render(<CardSlot />);
 
-    const plate = screen.getByRole("status", { name: "Played card" });
-    expect(plate.textContent).toBe("Neighbor Punch");
-
     const pocket = container.querySelector(".card-slot-pocket")!;
-    expect(pocket.textContent).toBe(""); // blank card back — no name on the card
+    expect(pocket.querySelector(".seated-card")).not.toBeNull();
+    expect(pocket.textContent).toBe(""); // blank card back
   });
 
-  it("shows an empty plate and the drop hint while nothing is seated", () => {
+  it("shows the drop hint while nothing is seated", () => {
     useGame.setState({ state: makeState(), seatedCard: null });
     const { container } = render(<CardSlot />);
 
-    expect(screen.getByRole("status", { name: "Played card" }).textContent).toBe("");
+    expect(container.querySelector(".seated-card")).toBeNull();
     // The hint breaks one word per line (<br/>), so its textContent has no
     // spaces between words — match with \s* instead of literal spaces.
     const hint = container.querySelector(".card-slot-hint");

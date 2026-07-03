@@ -168,9 +168,9 @@ button {
   box-shadow: var(--shadow-soft);
 }
 
-/* top row, two columns: tile window (3/4, left-aligned) | card slot with its
-   nameplate stacked and centered (1/4). Transport controls sit on their own
-   centered row below (.machine-controls). */
+/* top row, two columns: tile window (3/4, left-aligned) | card slot centered
+   (1/4). Transport controls and the status window share the row below
+   (.machine-controls). */
 .machine-top {
   display: flex;
   align-items: center;
@@ -269,23 +269,6 @@ button.machine-window {
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
-}
-/* readout plate under the pocket: shows the seated card's name */
-.card-slot-name {
-  min-width: 64px;
-  max-width: 84px;
-  min-height: 2.4em;
-  display: grid;
-  place-items: center;
-  padding: 0.25rem 0.4rem;
-  background: var(--slot);
-  border-radius: 6px;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: #e8d9c6;
-  text-align: center;
 }
 .card-slot-pocket {
   position: relative;
@@ -658,8 +641,8 @@ button.machine-window {
   color: var(--ink-soft);
 }
 
-/* seated card in the slot — blank card back; its name reads out on the
-   .card-slot-name plate beside the pocket */
+/* seated card in the slot — blank card back; the play is announced by name
+   in the status window */
 .seated-card {
   position: absolute;
   inset: 0;

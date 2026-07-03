@@ -6,11 +6,11 @@ import type { GameAction } from "./types";
 import { asCellIndex } from "./types";
 
 describe("createInitialState", () => {
-  it("starts a fresh 6x4 game with full pool, empty board, dealt hand", () => {
+  it("starts a fresh 7x5 game with full pool, empty board, dealt hand", () => {
     const s = createInitialState("dev-seed");
-    expect(s.pieces).toHaveLength(24);
-    expect(s.pool).toHaveLength(24);
-    expect(s.board).toHaveLength(24);
+    expect(s.pieces).toHaveLength(35);
+    expect(s.pool).toHaveLength(35);
+    expect(s.board).toHaveLength(35);
     expect(s.board.every((c) => c === null)).toBe(true);
     expect(s.queue).toEqual([]);
     expect(s.hand).toHaveLength(0); // openingSize 0 — hand fills by placing

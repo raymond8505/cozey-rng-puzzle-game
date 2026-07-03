@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { reduce } from "./reducer";
 import { resolveCard } from "./cards";
 import { machineSpeedMs, displayedSequence } from "./selectors";
-import { makeState } from "@/fixtures/game.fixture";
+import { makeState, makeState6x4 } from "@/fixtures/game.fixture";
 import type { Card, GameState, PieceId } from "./types";
 import { asCellIndex } from "./types";
 
@@ -60,7 +60,7 @@ describe("Edge Punch", () => {
 
 describe("Neighbor Punch", () => {
   it("filters to pieces adjacent to a filled cell", () => {
-    const base = makeState();
+    const base = makeState6x4(); // cell-index expectations below assume 6 cols
     const withPlaced = placeOnBoard(base, base.pieces[0].id, 0); // fill corner cell 0
     const s: GameState = { ...withPlaced, hand: handOf("neighborPunch") };
     const played = reduce(s, { type: "PLAY_CARD", instanceId: 1 });

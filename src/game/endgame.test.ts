@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { reduce } from "./reducer";
 import { completeness, scoreTier, isGameOver } from "./selectors";
-import { makeState, playPerfect } from "@/fixtures/game.fixture";
+import { makeState, makeState6x4, playPerfect } from "@/fixtures/game.fixture";
 import type { GameState, PieceId } from "./types";
 import { asCellIndex } from "./types";
 
@@ -42,7 +42,7 @@ describe("end-of-game detection", () => {
 
 describe("completeness with misplaced pieces", () => {
   it("counts only correctly-homed cells", () => {
-    const s = craftFullBoard(makeState(), 1); // 22/24 correct
+    const s = craftFullBoard(makeState6x4(), 1); // 22/24 correct
     expect(completeness(s)).toBeCloseTo((22 / 24) * 100, 5);
   });
 
@@ -55,7 +55,7 @@ describe("completeness with misplaced pieces", () => {
       [9, "Art."], // 6/24 = 25 -> <30
     ];
     for (const [swaps, slogan] of cases) {
-      const s = craftFullBoard(makeState(), swaps);
+      const s = craftFullBoard(makeState6x4(), swaps);
       expect(scoreTier(s).slogan).toBe(slogan);
     }
   });
@@ -63,7 +63,7 @@ describe("completeness with misplaced pieces", () => {
 
 describe("mid-board completeness", () => {
   it("is 0 on an empty board and rises as pieces are homed", () => {
-    const s = makeState();
+    const s = makeState6x4(); // the 1/24 expectation below assumes 24 cells
     expect(completeness(s)).toBe(0);
     // home the currently displayed piece on its own cell
     const piece = s.pool[s.machine.displayIndex % s.pool.length]!;

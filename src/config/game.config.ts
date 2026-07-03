@@ -43,7 +43,7 @@ export interface GameConfig {
 }
 
 export const GAME_CONFIG: GameConfig = {
-  board: { cols: 6, rows: 4 },
+  board: { cols: 7, rows: 5 },
   machine: { fastMs: 90, slowMs: 2600, comfortableMs: 750 },
   queue: { capacityRatio: 0.125 },
   hand: { capacity: 3, openingSize: 0 },

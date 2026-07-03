@@ -3,6 +3,7 @@
 // through this list. Images are vite asset imports (URLs); the grid feeds
 // createInitialState as a per-run board override.
 
+import bebop from "@/assets/bebop.jpg";
 import wheatField from "@/assets/puzzle.jpg";
 import waterLilies from "@/assets/puzzle-low.jpg";
 
@@ -14,6 +15,8 @@ export interface Puzzle {
 }
 
 export const PUZZLES: readonly Puzzle[] = [
+  // Cel-shaded, bold outlines — the boot puzzle (index 0 = BOOT_INDEX).
+  { id: "bebop", label: "Bebop", src: bebop, board: { cols: 7, rows: 5 } },
   // Higher contrast, distinct regions — the gentler puzzle.
   { id: "wheatfield", label: "Wheat Field with Cypresses", src: wheatField, board: { cols: 6, rows: 4 } },
   // Low contrast, tonal — harder to read, on a larger grid.

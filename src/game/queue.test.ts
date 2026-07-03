@@ -6,7 +6,7 @@ import {
   legalActions,
   currentDisplayedPiece,
 } from "./selectors";
-import { makeState, makeConfig } from "@/fixtures/game.fixture";
+import { makeState, makeState6x4, makeConfig } from "@/fixtures/game.fixture";
 import type { GameState, PieceId } from "./types";
 import { asCellIndex } from "./types";
 
@@ -25,8 +25,8 @@ function fillQueue(state: GameState): GameState {
 }
 
 describe("derived queue capacity", () => {
-  it("defaults to ceil(1/8 * 24) = 3 for 6x4", () => {
-    expect(queueCapacity(makeState())).toBe(3);
+  it("defaults to ceil(1/8 * 35) = 5 for 7x5", () => {
+    expect(queueCapacity(makeState())).toBe(5);
   });
 
   it("is derived, not hardcoded (5x5 @ ratio 1/4 => 7)", () => {
@@ -40,9 +40,11 @@ describe("derived queue capacity", () => {
   });
 });
 
+// The full-queue suites pin 6x4 (queue capacity 3) so the length-3
+// expectations survive default-board retunes.
 describe("full-queue forced placement", () => {
   it("marks a draw into a full queue as forced and blocks parking", () => {
-    const full = fillQueue(makeState());
+    const full = fillQueue(makeState6x4());
     expect(full.queue).toHaveLength(3);
     const drawn = reduce(full, { type: "DRAW" });
     expect(drawn.held?.fullQueueForce).toBe(true);
@@ -56,7 +58,7 @@ describe("full-queue forced placement", () => {
   });
 
   it("allows placing the drawn piece directly to satisfy the force", () => {
-    const full = fillQueue(makeState());
+    const full = fillQueue(makeState6x4());
     const drawn = reduce(full, { type: "DRAW" });
     const held = drawn.held!.piece;
     const placed = reduce(drawn, { type: "PLACE", cell: asCellIndex(10) });
@@ -68,7 +70,7 @@ describe("full-queue forced placement", () => {
 
 describe("full-queue swap", () => {
   it("swaps the held piece into the queue and places a displaced queued piece", () => {
-    const full = fillQueue(makeState());
+    const full = fillQueue(makeState6x4());
     const queueBefore = full.queue;
     const drawn = reduce(full, { type: "DRAW" });
     const held = drawn.held!.piece;
@@ -88,7 +90,7 @@ describe("full-queue swap", () => {
   });
 
   it("SWAP placing the held piece is equivalent to a direct place", () => {
-    const full = fillQueue(makeState());
+    const full = fillQueue(makeState6x4());
     const drawn = reduce(full, { type: "DRAW" });
     const held = drawn.held!.piece;
     const swapped = reduce(drawn, {

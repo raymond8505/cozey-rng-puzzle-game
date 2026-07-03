@@ -1,0 +1,27 @@
+services:
+  puzzle:
+    build:
+      context: .
+    container_name: puzzle
+    restart: unless-stopped
+    networks:
+      - n8n_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.puzzle.rule=Host(`puzzle.raymondselzer.net`)"
+      - "traefik.http.routers.puzzle.entrypoints=websecure"
+      - "traefik.http.routers.puzzle.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.puzzle.loadbalancer.server.port=80"
+      - "traefik.http.routers.puzzle-http.rule=Host(`puzzle.raymondselzer.net`)"
+      - "traefik.http.routers.puzzle-http.entrypoints=web"
+      - "traefik.http.routers.puzzle-http.middlewares=puzzle-redirect"
+      - "traefik.http.middlewares.puzzle-redirect.redirectscheme.scheme=https"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  n8n_default:
+    external: true

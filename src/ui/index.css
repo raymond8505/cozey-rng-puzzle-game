@@ -203,9 +203,31 @@ button {
   gap: 0.6rem;
   width: 100%;
   padding: 0.7rem;
-  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+  /* cream enamel chassis: a rivet strip printed along the top seam, over an
+     enamel-sheen gradient (first layer paints on top) */
+  background-image:
+    radial-gradient(
+      circle 2.6px at center,
+      var(--chrome-hi) 0 0.9px,
+      var(--rivet) 0.9px 2.2px,
+      rgba(0, 0, 0, 0.28) 2.2px 2.6px,
+      transparent 2.6px
+    ),
+    linear-gradient(180deg, #faf1d9 0%, var(--paper) 40%, #ecdfbc 100%);
+  background-size:
+    30px 14px,
+    100% 100%;
+  background-repeat: repeat-x, no-repeat;
+  background-position:
+    center top 5px,
+    center;
   border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
+  /* panel seams + tin showing at the worn edge */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -3px 0 rgba(58, 48, 35, 0.08),
+    0 0 0 1px var(--tin),
+    var(--shadow-soft);
 }
 
 /* top row, two columns: tile window (fills, left-aligned) | card slot at its
@@ -235,9 +257,13 @@ button {
   height: 84px;
   display: grid;
   place-items: center;
-  background: rgba(0, 0, 0, 0.25);
+  /* navy dashboard well behind a chrome bezel ring */
+  background: var(--slot);
   border-radius: 12px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.55);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.6),
+    0 0 0 3px var(--chrome-hi),
+    0 0 0 4px var(--chrome-lo);
   overflow: hidden;
   transition:
     box-shadow 0.2s ease,
@@ -258,8 +284,12 @@ button.machine-window {
 .machine-window.chosen {
   overflow: visible;
   background: #37725a;
+  /* the chrome ring must ride along in every state or it flickers off
+     during the box-shadow transition */
   box-shadow:
     inset 0 2px 10px rgba(0, 0, 0, 0.55),
+    0 0 0 3px var(--chrome-hi),
+    0 0 0 4px var(--chrome-lo),
     0 0 12px 2px color-mix(in srgb, var(--live) 55%, transparent);
 }
 /* crowbar armed: the window empties, ready to receive the pried piece. Same
@@ -268,6 +298,8 @@ button.machine-window {
   background: #24463c;
   box-shadow:
     inset 0 2px 10px rgba(0, 0, 0, 0.55),
+    0 0 0 3px var(--chrome-hi),
+    0 0 0 4px var(--chrome-lo),
     0 0 12px 2px color-mix(in srgb, var(--live) 30%, transparent);
 }
 /* Second Look: the window itself expands horizontally to show the captures
@@ -299,9 +331,9 @@ button.machine-window {
 }
 
 .machine-empty {
-  color: var(--ink-soft);
+  /* translucent cream — ink-soft is illegible on the navy well */
+  color: rgba(247, 238, 214, 0.55);
   font-size: 0.8rem;
-  opacity: 0.6;
 }
 
 /* post-it note | thin slot aperture, side by side, the aperture vertically
@@ -358,9 +390,13 @@ button.machine-window {
   height: 12px;
   border-radius: 6px;
   background: var(--slot);
+  /* chrome lip around the navy mouth; the ring layers must be repeated in
+     every slot-invite keyframe below or the lip blinks during the pulse */
   box-shadow:
     inset 0 2px 3px rgba(0, 0, 0, 0.6),
-    0 1px 0 rgba(255, 255, 255, 0.25);
+    0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 0 2px var(--chrome-hi),
+    0 0 0 3px var(--chrome-lo);
   transition: box-shadow 0.2s ease;
 }
 .card-slot.inviting .card-slot-opening {
@@ -372,12 +408,16 @@ button.machine-window {
     box-shadow:
       inset 0 2px 3px rgba(0, 0, 0, 0.6),
       0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 0 2px var(--chrome-hi),
+      0 0 0 3px var(--chrome-lo),
       0 0 0 0 color-mix(in srgb, var(--live) 0%, transparent);
   }
   50% {
     box-shadow:
       inset 0 2px 3px rgba(0, 0, 0, 0.6),
       0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 0 2px var(--chrome-hi),
+      0 0 0 3px var(--chrome-lo),
       0 0 10px 2px color-mix(in srgb, var(--live) 55%, transparent);
   }
 }
@@ -387,17 +427,33 @@ button.machine-window {
     box-shadow:
       inset 0 2px 3px rgba(0, 0, 0, 0.6),
       0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 0 2px var(--chrome-hi),
+      0 0 0 3px var(--chrome-lo),
       0 0 8px 1px color-mix(in srgb, var(--live) 50%, transparent);
   }
 }
 
-/* row 2: transport controls at natural size | status log fills the rest */
+/* row 2: transport controls at natural size | status log fills the rest.
+   Painted as one riveted red dashboard plate so button, toggle and console
+   read as a single control panel. */
 .machine-controls {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   justify-content: flex-start;
   width: 100%;
+  padding: 0.5rem 0.6rem;
+  background: linear-gradient(
+    180deg,
+    #d4523e 0%,
+    var(--accent) 45%,
+    var(--accent-deep) 100%
+  );
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.25),
+    0 0 0 1px var(--tin);
 }
 .machine-transport {
   flex: 0 0 max-content;
@@ -406,11 +462,15 @@ button.machine-window {
   gap: 0.75rem;
 }
 
+/* rocker plate: a cream panel with brass trim, mounted on the red plate */
 .speed-toggle {
   display: inline-flex;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(58, 53, 43, 0.25);
+  border: 1px solid var(--brass);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 .speed-btn {
   min-height: 44px;
@@ -420,8 +480,10 @@ button.machine-window {
   font-size: 0.85rem;
   color: var(--ink-soft);
 }
+/* pressed-in teal rocker — red would vanish against the red panel */
 .speed-btn.active {
-  background: var(--accent);
+  background: var(--litho-teal);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.3);
   color: #fff;
 }
 .speed-btn:disabled {
@@ -433,7 +495,13 @@ button.machine-window {
   padding: 0 2rem;
   border: none;
   border-radius: 14px;
-  background: var(--accent-deep);
+  /* chrome-ringed cherry pushbutton */
+  background: linear-gradient(
+    180deg,
+    #e05a44 0%,
+    var(--accent) 55%,
+    var(--accent-deep) 100%
+  );
   color: #fff;
   font-family: "Lilita One", "Arial Rounded MT Bold", "Segoe UI", sans-serif;
   font-size: 1.1rem;
@@ -441,12 +509,21 @@ button.machine-window {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   box-shadow:
-    0 3px 0 rgba(111, 31, 21, 0.7),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -3px 4px rgba(0, 0, 0, 0.2),
+    0 0 0 2px var(--chrome-hi),
+    0 0 0 3px var(--chrome-lo),
+    0 4px 0 #6f1f15,
     var(--shadow-soft);
 }
 .draw-btn:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 rgba(111, 31, 21, 0.7);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -3px 4px rgba(0, 0, 0, 0.2),
+    0 0 0 2px var(--chrome-hi),
+    0 0 0 3px var(--chrome-lo),
+    0 1px 0 #6f1f15;
 }
 .draw-btn:disabled {
   background: var(--tin);
@@ -465,9 +542,16 @@ button.machine-window {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0.3rem 0.5rem;
-  background: var(--slot);
+  /* navy glass console: sheen pinned to the element (default
+     background-attachment) so it doesn't scroll with the log */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 35%),
+    var(--slot);
   border-radius: 6px;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 0 2px var(--chrome-hi),
+    0 0 0 3px var(--chrome-lo);
   /* terminal voice for the console; mono needs no tracking help */
   font-family: "IBM Plex Mono", Consolas, monospace;
   font-size: 0.68rem;

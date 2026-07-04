@@ -99,9 +99,19 @@ button {
 /* --- board --- */
 .board-frame {
   width: 100%;
-  background: var(--paper);
+  /* cream enamel viewing panel with a printed teal pinstripe. The pinstripe
+     lives in inset shadows (5–6.5px), inside the 8px padding, so it never
+     collides with the svg; no border, so layout is untouched. No rivets
+     here — they'd sit under the grid's corner cells and pop in and out as
+     tiles cover them (the chassis carries the rivet motif). */
+  background: linear-gradient(170deg, #fbf4df 0%, var(--paper) 45%, #eee0bd 100%);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 0 0 5px var(--paper),
+    inset 0 0 0 6.5px var(--litho-teal),
+    0 0 0 1px var(--tin),
+    var(--shadow-soft);
   padding: 8px;
   overflow: hidden;
 }
@@ -595,28 +605,42 @@ button.machine-window {
 .queue {
   width: 100%;
 }
+/* teal lithographed parking tray */
 .queue-strip {
   display: flex;
   gap: 0.5rem;
   padding: 0.5rem;
-  background: var(--paper);
+  background: linear-gradient(
+    180deg,
+    #58a79b 0%,
+    var(--litho-teal) 40%,
+    var(--litho-teal-deep) 100%
+  );
   border-radius: 12px;
-  box-shadow: var(--shadow-soft);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.18),
+    var(--shadow-soft);
   justify-content: center;
 }
+/* cream chalk-line invite — teal-on-teal would vanish */
 .queue-strip.droppable {
-  outline: 2px dashed var(--litho-teal);
+  outline: 2px dashed var(--paper);
   outline-offset: -2px;
 }
+/* stamped depressions in the tin */
 .queue-slot {
   width: 56px;
   height: 56px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  background: rgba(131, 122, 100, 0.08);
+  background: rgba(10, 40, 40, 0.22);
   border-radius: 10px;
-  border: 1px solid rgba(131, 122, 100, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.25);
 }
 .queue-sprite {
   width: 100%;

@@ -122,10 +122,14 @@ export const useGame = create<GameStore>((set) => {
       ...(extra ? extra(state) : []),
       ...logForTransition(s.state, state),
     ]);
-    // A tile just got chosen (drawn or second-look kept): the played
-    // card has done its job, so the slot clears.
+    // A tile just got chosen (drawn or second-look kept): the played card has
+    // done its job, so the slot clears. Reveal is the exception — its job is
+    // the picture, so it stays seated until the grab that fades it (the
+    // DISMISS_REVEAL that actually flips revealActive off).
     const tileChosen = s.state.held === null && state.held !== null;
-    return tileChosen ? { state, log, seatedCard: null } : { state, log };
+    const revealFaded = s.state.revealActive && !state.revealActive;
+    const seatDone = s.seatedCard === "reveal" ? revealFaded : tileChosen;
+    return seatDone ? { state, log, seatedCard: null } : { state, log };
   };
 
   /** Outcome line for a just-reduced card play, if it produced a result. */

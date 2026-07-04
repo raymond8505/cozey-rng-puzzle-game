@@ -231,6 +231,24 @@ describe("reveal card", () => {
     ]);
   });
 
+  it("stays seated past the draw and ejects on the grab that fades the picture", () => {
+    useGame.getState().restart("reveal-seat-test");
+    useGame.getState().dispatch({ type: "DISMISS_REVEAL" });
+    useGame.getState().devAddCard("reveal");
+    const id = useGame.getState().state.hand.at(-1)!.instanceId;
+    useGame.getState().playCard(id);
+
+    // choosing a tile does NOT complete a Reveal — the picture is still up
+    useGame.getState().dispatch({ type: "DRAW" });
+    expect(useGame.getState().state.held).not.toBeNull();
+    expect(useGame.getState().seatedCard).toBe("reveal");
+
+    // the grab (drag start) fades the picture and ejects the card together
+    useGame.getState().dispatch({ type: "DISMISS_REVEAL" });
+    expect(useGame.getState().state.revealActive).toBe(false);
+    expect(useGame.getState().seatedCard).toBeNull();
+  });
+
   it("is a dud on a fresh (still-revealed) game: reason copy, then eject", () => {
     vi.useFakeTimers();
     try {

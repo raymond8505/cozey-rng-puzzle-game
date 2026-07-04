@@ -99,10 +99,19 @@ export interface LegalActions {
   readonly canToggleSpeed: boolean;
 }
 
+/** Was the card played this turn a Reveal? Sound because cardPlayedThisTurn
+ *  is only ever true after PLAY_CARD/PLAY_CROWBAR set lastCardResult in the
+ *  same reduction, and endTurn resets the flag. */
+export function revealPlayedThisTurn(s: GameState): boolean {
+  return s.cardPlayedThisTurn && s.lastCardResult?.card === "reveal";
+}
+
 export function legalActions(s: GameState): LegalActions {
   const forced = s.phase === "routing" && s.held !== null && s.held.fullQueueForce;
-  // Playing a card commits the turn to Action A (the draw), so Action B
-  // (place-from-queue) is only available before any card is played this turn.
+  // Playing a card commits the turn to Action A (the draw) — except Reveal,
+  // whose whole point is studying the picture against what you already hold,
+  // so it leaves Action B (place-from-queue) open. One card per turn still
+  // holds: canPlayCard stays gated on !cardPlayedThisTurn.
   const canStartAction = s.phase === "idle" && !s.cardPlayedThisTurn;
   return {
     canPlayCard: canStartAction && s.hand.length > 0,
@@ -115,7 +124,10 @@ export function legalActions(s: GameState): LegalActions {
     canPark: s.phase === "routing" && !forced && !isQueueFull(s),
     mustSwapOrPlace: forced,
     canPlaceFromQueue:
-      canStartAction && s.queue.length > 0 && emptyCells(s).length > 0,
+      s.phase === "idle" &&
+      (!s.cardPlayedThisTurn || revealPlayedThisTurn(s)) &&
+      s.queue.length > 0 &&
+      emptyCells(s).length > 0,
     canSecondLookKeep: s.phase === "secondLook",
     canSecondDraw:
       s.phase === "secondLook" && s.secondLook.drawsUsed === 1 && s.pool.length > 0,

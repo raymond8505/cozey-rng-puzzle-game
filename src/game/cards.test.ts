@@ -1,8 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { reduce } from "./reducer";
 import { resolveCard } from "./cards";
-import { machineSpeedMs, displayedSequence, currentDisplayedPiece } from "./selectors";
-import { makeState, makeState6x4, turnDrawPlace } from "@/fixtures/game.fixture";
+import {
+  machineSpeedMs,
+  displayedSequence,
+  currentDisplayedPiece,
+  legalActions,
+} from "./selectors";
+import { makeState, makeState6x4, turnDrawPlace, turnDrawPark } from "@/fixtures/game.fixture";
 import type { Card, GameState, PieceId } from "./types";
 import { asCellIndex } from "./types";
 
@@ -128,6 +133,42 @@ describe("Reveal", () => {
     const played = reduce(s, { type: "PLAY_CARD", instanceId: 1 });
     expect(played.revealActive).toBe(true);
     expect(played.cardPlayedThisTurn).toBe(true); // still consumed
+  });
+
+  it("leaves Action B open: the queue can be studied against the picture and played", () => {
+    const base = makeState();
+    const piece = currentDisplayedPiece(base)!;
+    const parked = turnDrawPark(base, piece); // queue holds one tile
+    const dismissed = reduce(parked, { type: "DISMISS_REVEAL" });
+    const s: GameState = { ...dismissed, hand: handOf("reveal") };
+    const played = reduce(s, { type: "PLAY_CARD", instanceId: 1 });
+
+    expect(legalActions(played).canPlaceFromQueue).toBe(true);
+    const home = asCellIndex(played.pieces[piece].home);
+    const placedFromQueue = reduce(played, {
+      type: "PLACE_FROM_QUEUE",
+      queued: piece,
+      cell: home,
+    });
+    expect(placedFromQueue.board[home]).toBe(piece);
+    expect(placedFromQueue.turnCount).toBe(played.turnCount + 1); // a normal Action B turn
+  });
+
+  it("every other card still commits the turn to Action A (queue locked)", () => {
+    const base = makeState();
+    const piece = currentDisplayedPiece(base)!;
+    const parked = turnDrawPark(base, piece);
+    const s: GameState = { ...parked, hand: handOf("governor") };
+    const played = reduce(s, { type: "PLAY_CARD", instanceId: 1 });
+
+    expect(legalActions(played).canPlaceFromQueue).toBe(false);
+    const attempted = reduce(played, {
+      type: "PLACE_FROM_QUEUE",
+      queued: piece,
+      cell: asCellIndex(played.pieces[piece].home),
+    });
+    expect(attempted.lastRejection).toBe("illegalInPhase");
+    expect(attempted.board.every((c) => c === null)).toBe(true);
   });
 });
 

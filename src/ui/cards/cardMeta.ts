@@ -50,5 +50,6 @@ export const EFFECT_TOAST: Readonly<Record<CardEffectKind, string>> = {
     "The Machine now only shows tiles neighbouring tiles on the board",
   secondLookArmed: "Draw two, pick one.",
   crowbarLift: "Take a tile from the board, park or replace it in a new spot",
-  revealBoard: "The finished picture is up — it fades when you grab a tile.",
+  revealBoard:
+    "The finished picture is up — study it, then grab a tile from the window or your queue.",
 };

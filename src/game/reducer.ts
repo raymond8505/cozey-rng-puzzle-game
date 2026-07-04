@@ -19,6 +19,7 @@ import {
   queueCapacity,
   isGameOver,
   currentDisplayedPiece,
+  revealPlayedThisTurn,
 } from "./selectors";
 
 // --- small helpers ----------------------------------------------------------
@@ -356,9 +357,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
 
     // --- Action B: place from queue ---
     case "PLACE_FROM_QUEUE": {
-      // Playing a card commits the turn to Action A, so Action B is idle-only
-      // and only before any card is played.
-      if (s.phase !== "idle" || s.cardPlayedThisTurn)
+      // Playing a card commits the turn to Action A — except Reveal, which
+      // exists to be studied against the queue, so it leaves Action B open
+      // (one card per turn still holds; see legalActions).
+      if (s.phase !== "idle" || (s.cardPlayedThisTurn && !revealPlayedThisTurn(s)))
         return reject(s, "illegalInPhase");
       if (!s.queue.includes(action.queued)) return reject(s, "pieceNotInQueue");
       if (!inRange(s, action.cell)) return reject(s, "cellOutOfRange");

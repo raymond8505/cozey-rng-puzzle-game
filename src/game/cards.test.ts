@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { reduce } from "./reducer";
 import { resolveCard } from "./cards";
-import { machineSpeedMs, displayedSequence } from "./selectors";
-import { makeState, makeState6x4 } from "@/fixtures/game.fixture";
+import { machineSpeedMs, displayedSequence, currentDisplayedPiece } from "./selectors";
+import { makeState, makeState6x4, turnDrawPlace } from "@/fixtures/game.fixture";
 import type { Card, GameState, PieceId } from "./types";
 import { asCellIndex } from "./types";
 
@@ -99,6 +99,63 @@ describe("Crowbar (no-effect path)", () => {
     // a normal draw is still possible this turn
     const drawn = reduce(played, { type: "DRAW" });
     expect(drawn.phase).toBe("routing");
+  });
+});
+
+describe("Reveal", () => {
+  it("re-shows the finished picture once it has been dismissed", () => {
+    const base = makeState();
+    const dismissed = reduce(base, { type: "DISMISS_REVEAL" });
+    const s: GameState = { ...dismissed, hand: handOf("reveal") };
+    const played = reduce(s, { type: "PLAY_CARD", instanceId: 1 });
+    expect(played.revealActive).toBe(true);
+    expect(played.lastCardResult).toEqual({
+      kind: "effect",
+      card: "reveal",
+      effect: "revealBoard",
+    });
+    expect(played.cardPlayedThisTurn).toBe(true);
+  });
+
+  it("no-effects when the picture is already showing (e.g. game start)", () => {
+    const base = makeState(); // fresh games start revealed
+    const s: GameState = { ...base, hand: handOf("reveal") };
+    expect(resolveCard(s, "reveal")).toEqual({
+      kind: "noEffect",
+      card: "reveal",
+      reasonCode: "reveal.alreadyShowing",
+    });
+    const played = reduce(s, { type: "PLAY_CARD", instanceId: 1 });
+    expect(played.revealActive).toBe(true);
+    expect(played.cardPlayedThisTurn).toBe(true); // still consumed
+  });
+});
+
+describe("DISMISS_REVEAL", () => {
+  it("starts revealed and dismisses without touching turn state", () => {
+    const base = makeState();
+    expect(base.revealActive).toBe(true);
+    const dismissed = reduce(base, { type: "DISMISS_REVEAL" });
+    expect(dismissed.revealActive).toBe(false);
+    expect(dismissed.phase).toBe(base.phase);
+    expect(dismissed.turnCount).toBe(base.turnCount);
+    expect(dismissed.cardPlayedThisTurn).toBe(base.cardPlayedThisTurn);
+  });
+
+  it("is inert when already dismissed (identical state object)", () => {
+    const dismissed = reduce(makeState(), { type: "DISMISS_REVEAL" });
+    expect(reduce(dismissed, { type: "DISMISS_REVEAL" })).toBe(dismissed);
+  });
+
+  it("a card-played reveal persists across endTurn until the next grab", () => {
+    const base = makeState();
+    const dismissed = reduce(base, { type: "DISMISS_REVEAL" });
+    const s: GameState = { ...dismissed, hand: handOf("reveal") };
+    const played = reduce(s, { type: "PLAY_CARD", instanceId: 1 });
+    const piece = currentDisplayedPiece(played)!;
+    const nextTurn = turnDrawPlace(played, piece, asCellIndex(played.pieces[piece].home));
+    expect(nextTurn.turnCount).toBe(played.turnCount + 1); // turn really ended
+    expect(nextTurn.revealActive).toBe(true);
   });
 });
 

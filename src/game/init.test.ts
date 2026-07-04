@@ -14,10 +14,11 @@ describe("createInitialState", () => {
     expect(s.board.every((c) => c === null)).toBe(true);
     expect(s.queue).toEqual([]);
     expect(s.hand).toHaveLength(0); // openingSize 0 — hand fills by placing
-    expect(s.deck).toHaveLength(15); // full starter deck (nothing dealt)
+    expect(s.deck).toHaveLength(8); // full starter deck (nothing dealt)
     expect(s.discard).toEqual([]);
     expect(s.reshuffles).toBe(0);
     expect(s.phase).toBe("idle");
+    expect(s.revealActive).toBe(true); // every fresh game starts revealed
     expect(s.held).toBeNull();
     expect(s.machine.baseSpeedMs).toBe(s.config.machine.slowMs);
   });

@@ -211,6 +211,47 @@ describe("status log", () => {
   });
 });
 
+// Reveal rides the standard play pipeline: an effective play flips
+// state.revealActive and seats the card; playing while the picture is already
+// up (every fresh game starts revealed) is a dud with its own reason copy.
+describe("reveal card", () => {
+  it("re-shows the picture after a dismissal, seating and logging the play", () => {
+    useGame.getState().restart("reveal-test");
+    useGame.getState().dispatch({ type: "DISMISS_REVEAL" });
+    useGame.getState().devAddCard("reveal");
+    const id = useGame.getState().state.hand.at(-1)!.instanceId;
+    useGame.getState().playCard(id);
+
+    expect(useGame.getState().state.revealActive).toBe(true);
+    expect(useGame.getState().seatedCard).toBe("reveal");
+    expect(useGame.getState().log.map(({ tone, text }) => ({ tone, text }))).toEqual([
+      { tone: "info", text: "Draw a tile." },
+      { tone: "info", text: "Card Inserted: Reveal." },
+      { tone: "effect", text: EFFECT_TOAST.revealBoard },
+    ]);
+  });
+
+  it("is a dud on a fresh (still-revealed) game: reason copy, then eject", () => {
+    vi.useFakeTimers();
+    try {
+      useGame.getState().restart("reveal-dud-test");
+      useGame.getState().devAddCard("reveal");
+      const id = useGame.getState().state.hand.at(-1)!.instanceId;
+      useGame.getState().playCard(id);
+
+      expect(useGame.getState().log.at(-1)).toMatchObject({
+        tone: "noEffect",
+        text: GAME_CONFIG.copy.noEffect.reveal,
+      });
+      expect(useGame.getState().seatedCard).toBe("reveal");
+      vi.advanceTimersByTime(NO_EFFECT_EJECT_MS);
+      expect(useGame.getState().seatedCard).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 // Dev harness: conjure any card into the hand / discard one straight out.
 // instanceIds must stay unique across all circulating cards (React keys,
 // PLAY_CARD lookups) even after several adds.

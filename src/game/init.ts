@@ -70,6 +70,7 @@ export function createInitialState(
       drawsUsed: 0,
     },
     rng: rngState,
+    revealActive: true,
     lastCardResult: null,
     lastRejection: null,
     turnCount: 0,

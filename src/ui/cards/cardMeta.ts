@@ -35,6 +35,11 @@ export const CARD_META: Readonly<Record<CardType, CardMeta>> = {
     cardClass: "defense",
     blurb: "Pry a placed tile back off the board.",
   },
+  reveal: {
+    name: "Reveal",
+    cardClass: "defense",
+    blurb: "Shows the finished picture until you grab a tile.",
+  },
 };
 
 /** Brief confirmation shown when an effect goes live (dry, factual). */
@@ -45,4 +50,5 @@ export const EFFECT_TOAST: Readonly<Record<CardEffectKind, string>> = {
     "The Machine now only shows tiles neighbouring tiles on the board",
   secondLookArmed: "Draw two, pick one.",
   crowbarLift: "Take a tile from the board, park or replace it in a new spot",
+  revealBoard: "The finished picture is up — it fades when you grab a tile.",
 };

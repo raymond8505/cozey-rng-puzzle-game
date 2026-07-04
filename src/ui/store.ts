@@ -48,6 +48,8 @@ const bootState = devFill
       pool: [],
       queue: [],
       held: null,
+      // The quick-fill exists to eyeball the board — don't hide it.
+      revealActive: false,
     }
   : boot;
 
@@ -255,7 +257,15 @@ export const useGame = create<GameStore>((set) => {
 
     devSetBoard: (board) =>
       set((s) => ({
-        state: { ...s.state, board, pool: [], queue: [], held: null },
+        state: {
+          ...s.state,
+          board,
+          pool: [],
+          queue: [],
+          held: null,
+          // Board inspection tool — the overlay would hide what it shows.
+          revealActive: false,
+        },
       })),
 
     devAddCard: (type) =>

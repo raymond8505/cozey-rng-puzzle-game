@@ -121,8 +121,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case "RESTART":
       return createInitialState(action.seed ?? s.config.rng.seed, s.config);
 
-    case "INSPECT_TARGET":
-      return s; // UI-only; no core state change.
+    case "DISMISS_REVEAL":
+      // Returning s unchanged keeps repeat drag-start dispatches inert.
+      return s.revealActive ? { ...s, revealActive: false } : s;
 
     case "TOGGLE_SPEED": {
       if (s.phase === "gameOver") return reject(s, "illegalInPhase");
@@ -181,6 +182,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
             break;
           case "secondLookArmed":
             next = { ...next, secondLook: { ...next.secondLook, armed: true } };
+            break;
+          case "revealBoard":
+            next = { ...next, revealActive: true };
             break;
           case "crowbarLift":
             break; // unreachable here; crowbar routed via PLAY_CROWBAR.

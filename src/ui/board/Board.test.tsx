@@ -9,6 +9,7 @@ import { render, cleanup } from "@testing-library/react";
 import { makeState, turnDrawPlace } from "@/fixtures/game.fixture";
 import { currentDisplayedPiece } from "@/game/selectors";
 import { asCellIndex } from "@/game/types";
+import { reduce } from "@/game/reducer";
 import { Board } from "./Board";
 
 afterEach(cleanup);
@@ -36,5 +37,18 @@ describe("Board drag-to-pry", () => {
 
     expect(container.querySelector(".pry-layer")).toBeNull();
     expect(container.querySelectorAll(".pry-token")).toHaveLength(0);
+  });
+});
+
+describe("Board finished-picture overlay", () => {
+  it("shows the overlay while the reveal is active (fresh game)", () => {
+    const { container } = render(<Board state={makeState()} />);
+    expect(container.querySelectorAll(".board-reveal")).toHaveLength(1);
+  });
+
+  it("renders no overlay once the reveal is dismissed", () => {
+    const state = reduce(makeState(), { type: "DISMISS_REVEAL" });
+    const { container } = render(<Board state={state} />);
+    expect(container.querySelector(".board-reveal")).toBeNull();
   });
 });

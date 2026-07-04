@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, type PanInfo } from "motion/react";
+import { AnimatePresence, motion, type PanInfo } from "motion/react";
 import type { GameState, PieceId } from "@/game/types";
 import { asCellIndex } from "@/game/types";
 import { gridDims, isOverlappingPlacement } from "@/game/selectors";
@@ -121,6 +121,29 @@ export function Board({
                 />
               ),
             )}
+
+          {/* Finished-picture overlay. Last child = paints above everything in
+              the svg; pointer-events: none (.board-reveal) keeps drops/clicks
+              working. initial={false} on AnimatePresence: present at boot with
+              no fade-in, but a mid-game Reveal card play fades it in. */}
+          <AnimatePresence initial={false}>
+            {state.revealActive && (
+              <motion.image
+                className="board-reveal"
+                href={puzzleSrc}
+                x={0}
+                y={0}
+                width={boardW}
+                height={boardH}
+                preserveAspectRatio="xMidYMid slice"
+                aria-hidden
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.45 }}
+              />
+            )}
+          </AnimatePresence>
         </svg>
 
         {pryActive && (

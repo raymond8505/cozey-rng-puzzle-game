@@ -57,7 +57,8 @@ export type CardEffectKind =
   | "filterEdge"
   | "filterNeighbor"
   | "secondLookArmed"
-  | "crowbarLift";
+  | "crowbarLift"
+  | "revealBoard";
 
 /** Namespaced <cardKey>.<cause>. The prefix maps to config.copy.noEffect. */
 export type CardReasonCode =
@@ -65,7 +66,8 @@ export type CardReasonCode =
   | "neighborPunch.noQualifyingPieces"
   | "secondLook.onePieceLeft"
   | "crowbar.boardEmpty"
-  | "governor.unreachable";
+  | "governor.unreachable"
+  | "reveal.alreadyShowing";
 
 export type CardPlayResult =
   | { readonly kind: "effect"; readonly card: CardType; readonly effect: CardEffectKind }
@@ -185,6 +187,12 @@ export interface GameState {
   readonly secondLook: SecondLookState;
   readonly rng: RngState;
 
+  /** The finished-picture overlay over the board. True at init (every fresh
+   *  game starts revealed); cleared ONLY by DISMISS_REVEAL (the player grabbing
+   *  a tile from the window or queue); re-set by the Reveal card. Deliberately
+   *  NOT cleared by endTurn — it persists until a grab. */
+  readonly revealActive: boolean;
+
   /** Latest card play outcome, for the UI status log. */
   readonly lastCardResult: CardPlayResult | null;
   readonly lastRejection: RejectionCode | null;
@@ -215,4 +223,6 @@ export type GameAction =
   // Action B: place one queued piece on an empty cell. Ends the turn.
   | { readonly type: "PLACE_FROM_QUEUE"; readonly queued: PieceId; readonly cell: CellIndex }
   | { readonly type: "RESTART"; readonly seed?: string }
-  | { readonly type: "INSPECT_TARGET" };
+  // Fades the finished-picture overlay; dispatched on tile drag-start. Free
+  // (legal in any phase, no turn cost) and inert when already dismissed.
+  | { readonly type: "DISMISS_REVEAL" };

@@ -19,6 +19,7 @@ describe("messageForResult", () => {
       ["neighborPunch.noQualifyingPieces", "neighborPunch"],
       ["secondLook.onePieceLeft", "secondLook"],
       ["crowbar.boardEmpty", "crowbar"],
+      ["reveal.alreadyShowing", "reveal"],
     ];
     for (const [reasonCode, key] of cases) {
       const r: CardPlayResult = { kind: "noEffect", card: "crowbar", reasonCode };

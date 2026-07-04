@@ -56,5 +56,10 @@ export function resolveCard(s: GameState, card: CardType): CardPlayResult {
       return boardHasPlacedPiece(s)
         ? { kind: "effect", card, effect: "crowbarLift" }
         : { kind: "noEffect", card, reasonCode: "crowbar.boardEmpty" };
+
+    case "reveal":
+      return s.revealActive
+        ? { kind: "noEffect", card, reasonCode: "reveal.alreadyShowing" }
+        : { kind: "effect", card, effect: "revealBoard" };
   }
 }

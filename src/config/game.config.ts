@@ -11,14 +11,16 @@ export type DeckCardType =
   | "edgePunch"
   | "neighborPunch"
   | "secondLook"
-  | "crowbar";
+  | "crowbar"
+  | "reveal";
 
 /** Reason-code prefixes that map to no-effect copy (see resolveCard). */
 export type NoEffectCopyKey =
   | "edgePunch"
   | "neighborPunch"
   | "secondLook"
-  | "crowbar";
+  | "crowbar"
+  | "reveal";
 
 export interface GameConfig {
   readonly board: { readonly cols: number; readonly rows: number };
@@ -34,7 +36,10 @@ export interface GameConfig {
     readonly count: number;
   }>;
   readonly scoring: {
-    readonly tiers: ReadonlyArray<{ readonly min: number; readonly slogan: string }>;
+    readonly tiers: ReadonlyArray<{
+      readonly min: number;
+      readonly slogan: string;
+    }>;
   };
   readonly copy: {
     readonly noEffect: Readonly<Record<NoEffectCopyKey, string>>;
@@ -51,12 +56,13 @@ export const GAME_CONFIG: GameConfig = {
   queue: { capacityRatio: 0.1 },
   hand: { capacity: 3, openingSize: 0 },
   // Governor is out of the shipped rotation (its type, effect, and UI remain
-  // playable) — its 4 slots went to extra crowbars.
+  // playable).
   deck: [
-    { card: "edgePunch", count: 3 },
-    { card: "neighborPunch", count: 3 },
+    { card: "crowbar", count: 2 },
+    { card: "reveal", count: 2 },
     { card: "secondLook", count: 2 },
-    { card: "crowbar", count: 7 },
+    { card: "edgePunch", count: 1 },
+    { card: "neighborPunch", count: 1 },
   ],
   scoring: {
     tiers: [
@@ -69,10 +75,14 @@ export const GAME_CONFIG: GameConfig = {
   },
   copy: {
     noEffect: {
-      edgePunch: "No edge tiles are left in the Machine — the filter matched nothing.",
-      neighborPunch: "Nothing on the board borders any tile still in the Machine.",
-      secondLook: "Only one tile remained — the second look showed the same tile.",
+      edgePunch:
+        "No edge tiles are left in the Machine — the filter matched nothing.",
+      neighborPunch:
+        "Nothing on the board borders any tile still in the Machine.",
+      secondLook:
+        "Only one tile remained — the second look showed the same tile.",
       crowbar: "There was nothing on the board to pry loose.",
+      reveal: "The finished picture is already showing.",
     },
   },
   rng: { seed: "dev-seed" },

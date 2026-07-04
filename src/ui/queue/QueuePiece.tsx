@@ -42,6 +42,7 @@ export function QueuePiece({ piece, mode }: QueuePieceProps) {
       dragSnapToOrigin
       dragMomentum={false}
       whileDrag={{ scale: 1.12, zIndex: 50 }}
+      onDragStart={() => dispatch({ type: "DISMISS_REVEAL" })}
       onDragEnd={onDragEnd}
     >
       <PieceSprite piece={state.pieces[piece]} dims={dims} className="queue-sprite" />

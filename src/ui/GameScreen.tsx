@@ -3,7 +3,6 @@ import { asCellIndex } from "@/game/types";
 import { legalActions, isGameOver } from "@/game/selectors";
 import { useMachineCycle } from "./machine/useMachineCycle";
 import { Board } from "./board/Board";
-import { TargetThumbnail } from "./board/TargetThumbnail";
 import { Machine } from "./machine/Machine";
 import { Queue } from "./queue/Queue";
 import { Hand } from "./cards/Hand";
@@ -47,7 +46,6 @@ export function GameScreen() {
             {filled} / {total} placed
           </p>
         </div>
-        <TargetThumbnail />
       </header>
 
       <Board state={state} dropActive={dropActive} pryActive={pryActive} onPry={onPry} />

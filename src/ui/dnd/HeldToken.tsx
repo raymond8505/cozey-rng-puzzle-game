@@ -32,6 +32,7 @@ export function HeldToken() {
       dragSnapToOrigin
       dragMomentum={false}
       whileDrag={{ scale: 1.08, zIndex: 50 }}
+      onDragStart={() => dispatch({ type: "DISMISS_REVEAL" })}
       onDragEnd={onDragEnd}
     >
       <PieceSprite piece={state.pieces[held.piece]} dims={gridDims(state)} />

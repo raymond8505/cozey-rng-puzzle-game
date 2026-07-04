@@ -697,15 +697,20 @@ button.machine-window {
   gap: 0.35rem;
 }
 .compare-item figcaption {
+  font-family: "Lilita One", "Arial Rounded MT Bold", "Segoe UI", sans-serif;
+  font-weight: 400;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--ink-soft);
 }
+/* same tin edge as the board frame, so both pictures sit in matching frames */
 .compare-target {
   width: 100%;
   border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
+  box-shadow:
+    0 0 0 1px var(--tin),
+    var(--shadow-soft);
   aspect-ratio: 6 / 4;
   object-fit: cover;
 }
@@ -807,6 +812,8 @@ button.machine-window {
   gap: 4px;
   justify-content: space-between;
   padding: 0 2px 0.15rem;
+  /* faint printed rule under the hole row, like ruled card stock */
+  border-bottom: 1px solid color-mix(in srgb, var(--litho-teal) 30%, transparent);
 }
 .card-hole {
   width: 6px;

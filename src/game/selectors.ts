@@ -59,15 +59,6 @@ export const machineSpeedMs = (s: GameState): number =>
     ? s.config.machine.comfortableMs
     : s.machine.baseSpeedMs;
 
-/** True when the piece on `cell` is misplaced AND borders a filled cell — i.e.
- *  it overlaps a neighbor and should render raised (casting a seam shadow). A
- *  correct placement, an empty cell, or a lone misplaced piece is not. */
-export function isOverlappingPlacement(s: GameState, cell: CellIndex): boolean {
-  const occupant = s.board[cell];
-  if (occupant === null || s.pieces[occupant].home === cell) return false;
-  return orthNeighbors(cell, gridDims(s)).some((n) => s.board[n] !== null);
-}
-
 export const isGameOver = (s: GameState): boolean =>
   s.pool.length === 0 &&
   s.queue.length === 0 &&

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion, type PanInfo } from "motion/react";
 import type { GameState, PieceId } from "@/game/types";
 import { asCellIndex } from "@/game/types";
-import { gridDims, isOverlappingPlacement } from "@/game/selectors";
+import { gridDims } from "@/game/selectors";
 import { useGame } from "../store";
 import { UNIT } from "./piecePath";
 import { PieceView } from "./PieceView";
@@ -41,14 +41,11 @@ export function Board({
   // Which cell's pry ghost is mid-drag (its board tile dims to read as lifted).
   const [lifting, setLifting] = useState<number | null>(null);
 
-  // A piece is "raised" (overlapping) when it's on the wrong cell AND has a
-  // filled orthogonal neighbor to overlap. Raised pieces render last so they
-  // sit on top and cast their shadow onto the pieces beneath.
+  // Every placed tile renders identically, in board order — no visual tell
+  // for a misplaced tile. Spotting one from the picture is the player's job.
   const placed = state.board
     .map((occupant, cell) => (occupant === null ? null : { cell, occupant }))
     .filter((p): p is { cell: number; occupant: PieceId } => p !== null);
-  const flush = placed.filter((p) => !isOverlappingPlacement(state, asCellIndex(p.cell)));
-  const raised = placed.filter((p) => isOverlappingPlacement(state, asCellIndex(p.cell)));
 
   const pryDragEnd =
     (cell: number) => (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -84,25 +81,13 @@ export function Board({
             ),
           )}
 
-          {flush.map(({ cell, occupant }) => (
+          {placed.map(({ cell, occupant }) => (
             <PieceView
               key={cell}
               piece={state.pieces[occupant]}
               cell={asCellIndex(cell)}
               dims={dims}
               imageHref={puzzleSrc}
-              dimmed={lifting === cell}
-            />
-          ))}
-
-          {raised.map(({ cell, occupant }) => (
-            <PieceView
-              key={cell}
-              piece={state.pieces[occupant]}
-              cell={asCellIndex(cell)}
-              dims={dims}
-              imageHref={puzzleSrc}
-              raised
               dimmed={lifting === cell}
             />
           ))}

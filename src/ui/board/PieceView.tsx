@@ -8,9 +8,6 @@ interface PieceViewProps {
   cell: CellIndex;
   dims: GridDims;
   imageHref: string;
-  /** A misplaced piece overlapping a filled neighbor — drawn raised, casting a
-   *  shadow at the seam so it's clear it can't seat (something's under it). */
-  raised?: boolean;
   /** Faded while its pry-drag ghost is in flight, so the tile reads as lifted
    *  off the board. On the OUTER group: motion pins the inner one's opacity. */
   dimmed?: boolean;
@@ -23,7 +20,6 @@ export function PieceView({
   cell,
   dims,
   imageHref,
-  raised = false,
   dimmed = false,
 }: PieceViewProps) {
   const path = homePiecePath(piece, dims);
@@ -45,7 +41,6 @@ export function PieceView({
       {/* Inner group animates the settle-in on placement; the outer group keeps
           the (static) cell translation so the two transforms don't fight. */}
       <motion.g
-        className={raised ? "piece-raised" : undefined}
         initial={{ opacity: 0, scale: 0.82 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", stiffness: 340, damping: 24 }}

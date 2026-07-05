@@ -74,6 +74,29 @@ describe("Crowbar lift-and-route", () => {
     expect(back.hand).toHaveLength(lifted.hand.length + 1); // still draws a card
   });
 
+  it("forfeits an armed crowbar: spent with no lift, turn still open", () => {
+    const placed = placeOne(makeState(), 5);
+    const s: GameState = { ...placed, hand: crowbarHand };
+    const forfeited = reduce(s, { type: "FORFEIT_CROWBAR", instanceId: 1 });
+
+    expect(forfeited.hand).toHaveLength(0);
+    expect(forfeited.discard.at(-1)).toEqual(crowbarHand[0]);
+    expect(forfeited.board).toEqual(s.board); // nothing lifted
+    expect(forfeited.held).toBeNull();
+    // the abandoning tile play (DRAW / PLACE_FROM_QUEUE) must still be legal
+    expect(forfeited.cardPlayedThisTurn).toBe(false);
+  });
+
+  it("forfeit rejects an absent card and a non-crowbar", () => {
+    const s: GameState = { ...makeState(), hand: [{ instanceId: 2, type: "governor" }] };
+    expect(reduce(s, { type: "FORFEIT_CROWBAR", instanceId: 9 }).lastRejection).toBe(
+      "cardNotInHand",
+    );
+    expect(reduce(s, { type: "FORFEIT_CROWBAR", instanceId: 2 }).lastRejection).toBe(
+      "illegalInPhase",
+    );
+  });
+
   it("lifting into a full queue forces placement (parking blocked)", () => {
     const full = fillQueue(makeState());
     const placed = placeOne(full, 12); // one piece on board, queue still full

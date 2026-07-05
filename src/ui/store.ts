@@ -188,7 +188,34 @@ export const useGame = create<GameStore>((set) => {
     puzzleSrc: PUZZLES[BOOT_INDEX].src,
     ...freshFeedback(bootState),
 
-    dispatch: (action) => set((s) => applyAction(s, action)),
+    dispatch: (action) =>
+      set((s) => {
+        // An armed crowbar abandoned for another tile play is spent first —
+        // a played card is never unplayed, and leaving the arm live would
+        // carry stale pry ghosts into later turns. Forfeit-first because the
+        // abandoning action changes phase/turn and would then reject the
+        // forfeit. (DRAW is UI-gated while armed; handled anyway so the rule
+        // holds at the store boundary.)
+        if (
+          s.pendingCrowbar !== null &&
+          (action.type === "DRAW" || action.type === "PLACE_FROM_QUEUE")
+        ) {
+          const forfeited = applyAction(
+            s,
+            { type: "FORFEIT_CROWBAR", instanceId: s.pendingCrowbar },
+            () => [
+              { tone: "noEffect", text: "The crowbar goes unused — spent." },
+            ],
+          );
+          const disarmed = { ...s, ...forfeited, seatedCard: null };
+          return {
+            ...applyAction(disarmed, action),
+            pendingCrowbar: null,
+            seatedCard: null,
+          };
+        }
+        return applyAction(s, action);
+      }),
     restart: (seed) =>
       set((s) => {
         const state = newGame(s.puzzleIndex, seed ?? s.state.config.rng.seed);

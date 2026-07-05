@@ -209,6 +209,9 @@ export type GameAction =
   // Crowbar names its lift target. When the board is empty the card no-effects
   // and `cell` is ignored, so it is optional.
   | { readonly type: "PLAY_CROWBAR"; readonly instanceId: number; readonly cell?: CellIndex }
+  // An armed crowbar abandoned for another tile play: the card is spent
+  // (discarded) without lifting anything. A played card is never unplayed.
+  | { readonly type: "FORFEIT_CROWBAR"; readonly instanceId: number }
   | { readonly type: "DRAW" }
   | { readonly type: "SECOND_LOOK_KEEP"; readonly which: "first" | "second" }
   | { readonly type: "PLACE"; readonly cell: CellIndex }

@@ -184,6 +184,39 @@ describe("crowbar relocate", () => {
   });
 });
 
+// A played card is never unplayed: if the player arms the crowbar but then
+// plays a tile another way (place-from-queue is reachable while armed), the
+// crowbar is spent — otherwise the arm survives the turn and stale pry
+// ghosts let them pry on a later turn.
+describe("armed crowbar forfeit", () => {
+  it("placing from the queue while armed spends the crowbar and disarms", () => {
+    useGame.getState().restart("forfeit-test");
+    useGame.getState().dispatch({ type: "DRAW" });
+    useGame.getState().dispatch({ type: "PLACE", cell: asCellIndex(0) });
+    useGame.getState().dispatch({ type: "DRAW" });
+    const queued = useGame.getState().state.held!.piece;
+    useGame.getState().dispatch({ type: "PARK" });
+
+    useGame.getState().devAddCard("crowbar");
+    const id = useGame.getState().state.hand.at(-1)!.instanceId;
+    useGame.getState().armCrowbar(id);
+
+    useGame
+      .getState()
+      .dispatch({ type: "PLACE_FROM_QUEUE", queued, cell: asCellIndex(5) });
+
+    const s = useGame.getState();
+    expect(s.state.board[5]).toBe(queued); // the tile play went through
+    expect(s.state.hand.some((c) => c.instanceId === id)).toBe(false);
+    expect(s.state.discard.some((c) => c.instanceId === id)).toBe(true);
+    expect(s.pendingCrowbar).toBeNull();
+    expect(s.seatedCard).toBeNull();
+    expect(s.log.map((l) => l.text)).toContain(
+      "The crowbar goes unused — spent.",
+    );
+  });
+});
+
 // The status log is the single feedback surface: card plays, outcomes, and
 // hints all append here, capped, and reset with the game they narrate.
 describe("status log", () => {

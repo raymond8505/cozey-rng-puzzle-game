@@ -234,6 +234,23 @@ export function reduce(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case "FORFEIT_CROWBAR": {
+      // An armed crowbar abandoned for another tile play (e.g. placing from
+      // the queue instead of prying): the card was played at arm time, so it
+      // is spent — discarded with no lift, no board change. It deliberately
+      // does NOT claim cardPlayedThisTurn: that would block the abandoning
+      // PLACE_FROM_QUEUE itself (a card play commits the turn to Action A),
+      // and both abandoning actions leave "idle" in the same dispatch, so no
+      // second card play can sneak into the window.
+      if (s.phase !== "idle" || s.cardPlayedThisTurn)
+        return reject(s, "cardAlreadyPlayed");
+      const card = s.hand.find((c) => c.instanceId === action.instanceId);
+      if (!card) return reject(s, "cardNotInHand");
+      if (card.type !== "crowbar") return reject(s, "illegalInPhase");
+
+      return { ...s, ...discardCard(s, card) };
+    }
+
     // --- Action A: draw ---
     case "DRAW": {
       if (s.phase === "idle") {

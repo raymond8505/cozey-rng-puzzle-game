@@ -2,9 +2,11 @@ import { useGame } from "../store";
 import { legalActions } from "@/game/selectors";
 import { MachineWindow } from "./MachineWindow";
 import { CardSlot } from "./CardSlot";
+import { ParkingArea } from "./ParkingArea";
 import { StatusWindow } from "./StatusWindow";
 
-/** The Machine appliance: a display window + a card slot, then a controls row
+/** The Machine appliance: a display window, the parking tray, and a card
+ *  slot across the top, then a controls row
  *  where the DRAW button and speed toggle sit beside the status window (the
  *  console log of every game message). The chosen (drawn/lifted) piece lives
  *  in the window itself (its `chosen` state) rather than a separate tray, so
@@ -38,6 +40,10 @@ export function Machine() {
             }
             awaitingLift={pendingCrowbar !== null}
           />
+        </div>
+
+        <div className="machine-col-park">
+          <ParkingArea />
         </div>
 
         <div className="machine-col-side">

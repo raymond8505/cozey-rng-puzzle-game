@@ -4,7 +4,6 @@ import { legalActions, isGameOver } from "@/game/selectors";
 import { useMachineCycle } from "./machine/useMachineCycle";
 import { Board } from "./board/Board";
 import { Machine } from "./machine/Machine";
-import { Queue } from "./queue/Queue";
 import { Hand } from "./cards/Hand";
 import { EndScreen } from "./end/EndScreen";
 import { DevPanel } from "./dev/DevPanel";
@@ -49,7 +48,6 @@ export function GameScreen() {
       </header>
 
       <Board state={state} dropActive={dropActive} pryActive={pryActive} onPry={onPry} />
-      <Queue />
       <Machine />
       <Hand />
 

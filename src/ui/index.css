@@ -177,6 +177,13 @@ button {
   filter: drop-shadow(0 1px 1px rgba(58, 48, 35, 0.25));
 }
 
+/* A misplaced piece overlapping a neighbor: raised, casting a seam shadow so
+   it's clear it can't press flush (something is under it). Offsets are in
+   viewBox units (cell = 100). */
+.piece-raised {
+  filter: drop-shadow(4px 5px 4px rgba(28, 23, 18, 0.75));
+}
+
 .empty-slot {
   fill: rgba(131, 122, 100, 0.06);
   stroke: rgba(131, 122, 100, 0.28);

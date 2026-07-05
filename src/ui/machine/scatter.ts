@@ -1,7 +1,7 @@
 import type { PieceId } from "@/game/types";
 
 /** One tile's littered pose in the parking tray: center position as a
- *  percentage of the tray box, plus the sideways tumble it landed with. */
+ *  percentage of the tray box, plus the slight tilt it landed with. */
 export interface Throw {
   readonly xPct: number;
   readonly yPct: number;
@@ -13,8 +13,10 @@ const X_MIN = 12;
 const X_MAX = 88;
 const Y_MIN = 32;
 const Y_SPAN = 36;
-/* "Thrown down" reads as lying sideways: 90 ± 25 degrees. */
-const ROT_MIN = 65;
+/* Tossed but readable: ±25 degrees off upright. A parked tile must still
+   telegraph its intended board alignment — a sideways tumble would force the
+   player to pick each tile up just to read it (user directive). */
+const ROT_MIN = -25;
 const ROT_SPAN = 50;
 
 /** UI-only scatter state — game state stays pure. Keyed by PieceId (stable),

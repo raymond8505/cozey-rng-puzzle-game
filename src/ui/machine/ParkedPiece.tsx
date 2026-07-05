@@ -14,7 +14,7 @@ export type QueueDragMode = "placeFromQueue" | "swap" | null;
 interface ParkedPieceProps {
   piece: PieceId;
   mode: QueueDragMode;
-  /** The tumble this tile landed with (65–115deg, from scatter.ts). */
+  /** The tilt this tile landed with (±25deg off upright, from scatter.ts). */
   rotDeg: number;
 }
 

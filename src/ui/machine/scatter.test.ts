@@ -9,7 +9,7 @@ describe("scatterFor", () => {
     _resetForTests();
   });
 
-  it("keeps every throw inside the tray bounds and the 65-115deg tumble range", () => {
+  it("keeps every throw inside the tray bounds and the ±25deg tilt range", () => {
     for (let round = 0; round < 50; round++) {
       _resetForTests();
       const queue = ids(1, 2, 3);
@@ -20,8 +20,8 @@ describe("scatterFor", () => {
         expect(t.xPct).toBeLessThanOrEqual(88);
         expect(t.yPct).toBeGreaterThanOrEqual(32);
         expect(t.yPct).toBeLessThanOrEqual(68);
-        expect(t.rotDeg).toBeGreaterThanOrEqual(65);
-        expect(t.rotDeg).toBeLessThanOrEqual(115);
+        expect(t.rotDeg).toBeGreaterThanOrEqual(-25);
+        expect(t.rotDeg).toBeLessThanOrEqual(25);
       }
     }
   });

@@ -225,8 +225,10 @@ button {
   width: 100%;
   padding: 0.7rem;
   padding-top: 1.5rem;
-  /* cream enamel chassis: a rivet strip printed along the top seam, over an
-     enamel-sheen gradient (first layer paints on top) */
+  /* cream enamel chassis: a rivet strip printed along the top seam, a faded
+     cherry wash rising from the bottom edge (full width — the controls sit
+     directly on it, no separate dashboard plate), over an enamel-sheen
+     gradient (first layer paints on top) */
   background-image:
     radial-gradient(
       circle 2.6px at center,
@@ -235,13 +237,22 @@ button {
       rgba(0, 0, 0, 0.28) 2.2px 2.6px,
       transparent 2.6px
     ),
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--accent-deep) 62%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 42%, transparent) 32%,
+      color-mix(in srgb, var(--accent) 14%, transparent) 52%,
+      transparent 68%
+    ),
     linear-gradient(180deg, #faf1d9 0%, var(--paper) 40%, #ecdfbc 100%);
   background-size:
     30px 14px,
+    100% 100%,
     100% 100%;
-  background-repeat: repeat-x, no-repeat;
+  background-repeat: repeat-x, no-repeat, no-repeat;
   background-position:
     center top 5px,
+    center,
     center;
   border-radius: var(--radius);
   /* panel seams + tin showing at the worn edge */
@@ -461,8 +472,8 @@ button.machine-window {
 }
 
 /* row 2: transport controls at natural size | status log fills the rest.
-   Painted as one riveted red dashboard plate so button, toggle and console
-   read as a single control panel. */
+   No plate of its own — the controls sit directly on the chassis' faded
+   cherry wash (see .machine's bottom gradient layer). */
 .machine-controls {
   display: flex;
   align-items: center;
@@ -470,17 +481,6 @@ button.machine-window {
   justify-content: flex-start;
   width: 100%;
   padding: 0.5rem 0.6rem;
-  background: linear-gradient(
-    180deg,
-    #c07260 0%,
-    var(--accent) 45%,
-    var(--accent-deep) 100%
-  );
-  border-radius: 10px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.25),
-    0 0 0 1px var(--tin);
 }
 .machine-transport {
   flex: 0 0 max-content;
@@ -489,7 +489,7 @@ button.machine-window {
   gap: 0.75rem;
 }
 
-/* rocker plate: a cream panel with brass trim, mounted on the red plate */
+/* rocker plate: a cream panel with brass trim, mounted on the red wash */
 .speed-toggle {
   display: inline-flex;
   border-radius: 10px;
@@ -507,7 +507,7 @@ button.machine-window {
   font-size: 0.85rem;
   color: var(--ink-soft);
 }
-/* pressed-in teal rocker — red would vanish against the red panel */
+/* pressed-in teal rocker — red would vanish against the red wash below */
 .speed-btn.active {
   background: var(--litho-teal);
   box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.3);

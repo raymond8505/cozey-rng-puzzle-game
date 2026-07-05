@@ -557,6 +557,9 @@ button.machine-window {
   height: 58px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* thin scrollbar, thumb in the console text color, no visible track */
+  scrollbar-width: thin;
+  scrollbar-color: #f0e4c4 transparent;
   padding: 0.3rem 0.5rem;
   /* navy glass console: sheen pinned to the element (default
      background-attachment) so it doesn't scroll with the log */

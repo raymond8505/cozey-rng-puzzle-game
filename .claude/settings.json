@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npx vitest run 2>$null)",
+      "PowerShell(Remove-Item -Confirm:$false src/ui/board/TargetThumbnail.tsx)",
+      "PowerShell(npx tsc -b 2>$null; echo \"tsc exit: $LASTEXITCODE\")",
+      "PowerShell(yarn dev --port 5199)",
+      "PowerShell($paths = @\\(\"$env:ProgramFiles\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\", \"${env:ProgramFiles\\(x86\\)}\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\", \"$env:ProgramFiles\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\", \"${env:ProgramFiles\\(x86\\)}\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"\\); $paths | ForEach-Object { \"$_ : $\\(Test-Path $_\\)\" })",
+      "Bash(SCRATCH=\"/c/Users/crazy/AppData/Local/Temp/claude/c--projects-cozy-puzzle-rng/97cc8c36-305c-489d-ae1e-82e1af062f26/scratchpad\"; grep -o '<image class=\"board-reveal\"[^>]*>' \"$SCRATCH/pc-dom.html\" | head -c 400; echo; grep -c 'class=\"empty-slot' \"$SCRATCH/pc-dom.html\")",
+      "Read(//c/Users/crazy/AppData/Local/Temp/claude/c--projects-cozy-puzzle-rng/97cc8c36-305c-489d-ae1e-82e1af062f26/scratchpad/**)",
+      "PowerShell(Remove-Item -Confirm:$false src/game/overlap.test.ts)",
+      "Bash(git -C \"c:/projects/cozy-puzzle-rng\" diff --stat)",
+      "PowerShell(yarn test)",
+      "PowerShell(git add src/ui/index.css index.html)",
+      "Bash(cat)",
+      "Bash(git commit *)",
+      "Bash(rm -f /c/Users/crazy/AppData/Local/Temp/claude/c--projects-cozy-puzzle-rng/99465368-c954-4efa-bfd3-bb1b73887073/scratchpad/commit-msg.txt)",
+      "PowerShell(git add src/ui/index.css)",
+      "Read(//c/Users/crazy/.claude/skills/process-management/**)",
+      "PowerShell(yarn build)",
+      "PowerShell(yarn dev --port 5199 --strictPort)",
+      "PowerShell(yarn dev --port 5233 --strictPort)",
+      "PowerShell($chrome = \"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\"; if \\(-not \\(Test-Path $chrome\\)\\) { $chrome = \"C:\\\\Program Files \\(x86\\)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\" }; if \\(-not \\(Test-Path $chrome\\)\\) { $chrome = \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" }; $shot = \"C:\\\\Users\\\\crazy\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--projects-cozy-puzzle-rng\\\\99465368-c954-4efa-bfd3-bb1b73887073\\\\scratchpad\\\\tin-toy.png\"; & $chrome --headless --disable-gpu --window-size=560,1100 --virtual-time-budget=6000 --screenshot=\"$shot\" \"http://localhost:5233/\"; if \\(Test-Path $shot\\) { \\(Get-Item $shot\\).Length })",
+      "PowerShell($chrome = \"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\"; $shot = \"C:\\\\Users\\\\crazy\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--projects-cozy-puzzle-rng\\\\99465368-c954-4efa-bfd3-bb1b73887073\\\\scratchpad\\\\tin-toy-2x.png\"; & $chrome --headless --disable-gpu --window-size=560,1100 --force-device-scale-factor=2 --virtual-time-budget=6000 --screenshot=\"$shot\" \"http://localhost:5233/\"; Test-Path $shot)",
+      "PowerShell($chrome = \"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\"; $shot = \"C:\\\\Users\\\\crazy\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--projects-cozy-puzzle-rng\\\\99465368-c954-4efa-bfd3-bb1b73887073\\\\scratchpad\\\\tintoy2x.png\"; $p = Start-Process -FilePath $chrome -ArgumentList '--headless','--disable-gpu','--window-size=560,1100','--force-device-scale-factor=2','--virtual-time-budget=6000',\"--screenshot=$shot\",'http://localhost:5233/' -Wait -PassThru; $p.ExitCode; Test-Path $shot)",
+      "PowerShell(\\(Get-Content \"C:\\\\Users\\\\crazy\\\\.claude\\\\CLAUDE.md\" | Measure-Object -Line\\).Lines)",
+      "Read(//c/Users/crazy/.claude/**)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\crazy\\.claude"
+    ]
+  }
+}

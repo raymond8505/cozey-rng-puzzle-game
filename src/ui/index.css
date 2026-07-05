@@ -246,9 +246,9 @@ button {
     var(--shadow-soft);
 }
 
-/* top row, two columns: tile window (fills, left-aligned) | card slot at its
-   natural width. Transport controls and the status window share the row below
-   (.machine-controls). */
+/* top row, three columns: tile window and card slot at their natural widths
+   flanking the parking tray, which takes the rest. Transport controls and the
+   status window share the row below (.machine-controls). */
 .machine-top {
   display: flex;
   align-items: center;
@@ -256,10 +256,15 @@ button {
   width: 100%;
 }
 .machine-col-main {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+}
+.machine-col-park {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
 }
 .machine-col-side {
   flex: 0 0 auto;
@@ -610,50 +615,69 @@ button.machine-window {
   color: #dbb384;
 }
 
-/* --- queue --- */
-.queue {
-  width: 100%;
-}
-/* teal lithographed parking tray */
-.queue-strip {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
+/* --- parking tray (on the machine) --- */
+/* teal lithographed tray stamped into the chassis — a recessed depression,
+   not a chromed well: a bezel ring here would compete with the window beside
+   it. Parked tiles litter it via absolutely-positioned scatter poses. */
+.parking-tray {
+  position: relative;
+  flex: 1;
+  min-height: 92px; /* never shorter than the 84px window column */
+  border-radius: 12px;
   background: linear-gradient(
     180deg,
     #7fada3 0%,
     var(--litho-teal) 40%,
     var(--litho-teal-deep) 100%
   );
-  border-radius: 12px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.18),
-    var(--shadow-soft);
-  justify-content: center;
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.35);
+  /* no overflow: hidden — drags must escape; tumbled sprites may overhang */
 }
 /* cream chalk-line invite — teal-on-teal would vanish */
-.queue-strip.droppable {
+.parking-tray.droppable {
   outline: 2px dashed var(--paper);
   outline-offset: -2px;
 }
-/* stamped depressions in the tin */
-.queue-slot {
+/* scatter pose wrapper: left/top percent from scatter.ts, centered by
+   negative margins — NOT translate(-50%, -50%), because motion owns
+   `transform` on the draggable inside */
+.parking-piece {
+  position: absolute;
   width: 56px;
   height: 56px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  background: rgba(10, 40, 40, 0.22);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.25);
+  margin: -28px 0 0 -28px;
 }
-.queue-sprite {
+.parking-piece svg {
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 2px 3px rgba(10, 40, 40, 0.35));
+}
+.parking-piece-still,
+.parking-piece-drag {
+  width: 100%;
+  height: 100%;
+}
+.parking-piece-drag {
+  cursor: grab;
+  touch-action: none;
+}
+.parking-piece-drag:active {
+  cursor: grabbing;
+}
+/* debossed count stamped in the top-right corner, the period IBM voice */
+.parking-count {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.68rem;
+  color: rgba(10, 40, 40, 0.6);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+  user-select: none;
 }
 
 .held-token {
@@ -669,16 +693,6 @@ button.machine-window {
 .held-token svg {
   width: 100%;
   height: 100%;
-}
-
-.queue-piece-drag {
-  width: 100%;
-  height: 100%;
-  cursor: grab;
-  touch-action: none;
-}
-.queue-piece-drag:active {
-  cursor: grabbing;
 }
 
 /* --- end screen --- */

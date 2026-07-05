@@ -58,11 +58,11 @@ export const GAME_CONFIG: GameConfig = {
   // Governor is out of the shipped rotation (its type, effect, and UI remain
   // playable).
   deck: [
-    { card: "crowbar", count: 2 },
+    { card: "crowbar", count: 3 },
     { card: "reveal", count: 2 },
-    { card: "secondLook", count: 2 },
+    { card: "secondLook", count: 1 },
     { card: "edgePunch", count: 1 },
-    { card: "neighborPunch", count: 1 },
+    { card: "neighborPunch", count: 2 },
   ],
   scoring: {
     tiers: [

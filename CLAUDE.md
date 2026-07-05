@@ -21,3 +21,15 @@ Drop targets carry `data-drop` (`"cell:<n>"`, `"queue"`, `"slot"`); `src/ui/dnd/
 - **Seated-card lifecycle** (`store.ts`): a card seats the moment it's played (crowbar seats at *arm* time), stays until a tile is chosen — except Reveal, which stays until the grab that fades the picture (the `DISMISS_REVEAL` that flips `revealActive` off; choosing a tile doesn't complete it). Only duds are on a timer (`NO_EFFECT_EJECT_MS`), guarded by a seat serial so a stale timeout can't evict a later card.
 - **Player-facing copy says "tile", never "piece"** — code identifiers (`PieceId`, `PieceSprite`) keep "piece". Tiles are always *dragged*; clicks are for choices (draw, Second Look keep).
 - `PieceView`'s inner `motion.g` pins `opacity` inline — state classes that fade the piece must sit on the OUTER `<g>` (`piece-dimmed`).
+
+## Visual design: sun-faded lithographed tin toy
+
+The machine is a rustic 50s retro-futuristic children's toy in lithographed tin. All texture is CSS gradients/box-shadows in `index.css` — no image assets, no decorative components.
+
+- **Every painted color is muted** — "faded by time" is a user directive, not taste drift. New saturated hexes should be desaturated toward their bleached selves before landing. Palette semantics live in `:root` (`--litho-teal`, `--tin` = worn edges/disabled, `--chrome-hi`/`--chrome-lo` = bezel ring pair, `--rivet`, `--brass`).
+- **Chrome bezels are outward box-shadow ring layers** (`0 0 0 2px var(--chrome-hi), 0 0 0 3px var(--chrome-lo)`). Any rule that overrides `box-shadow` on a beveled element — state classes (`.chosen`/`.awaiting`), every `@keyframes` frame, the reduced-motion override — must repeat the ring layers verbatim, or the bezel flickers off during the transition/pulse.
+- **No hover effects on the puzzle grid** (user directive): a `.cell-drop` fill/opacity change on hover visibly tints the artwork under the overlay rect.
+- **No decorative background art under the board svg**: backgrounds paint below children, so rivet dots on `.board-frame` pop in and out as tiles cover the corner cells. The chassis carries the rivet motif; the board frame keeps only the inset-shadow pinstripe (drawn at 5–6.5px, inside the 8px padding).
+- **Lilita One** is the display face (title, draw button, compare captions) — single weight, must pair with `font-weight: 400` or browsers faux-bold it. Loaded from the same Google Fonts `<link>` as Caveat/IBM Plex Mono.
+- The post-it stays deliberately off-palette (aged stationery, not machine paint); IBM Plex Mono stays — it's the period IBM voice for a game called Punchcard.
+- Misplaced-tile rule nuance: no visual tell for *wrong* tiles (45f92bb), but a tile **overlapping** a neighbor casts `.piece-raised`'s seam shadow — physical plausibility, not a correctness hint (7a6aa83).

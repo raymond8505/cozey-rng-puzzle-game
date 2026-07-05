@@ -1,5 +1,6 @@
 import { useGame } from "./store";
 import { asCellIndex } from "@/game/types";
+import type { DropTarget } from "./dnd/resolveDrop";
 import { legalActions, isGameOver } from "@/game/selectors";
 import { useMachineCycle } from "./machine/useMachineCycle";
 import { Board } from "./board/Board";
@@ -24,15 +25,19 @@ export function GameScreen() {
   const dropActive = state.phase === "routing" || legalActions(state).canPlaceFromQueue;
   const pryActive = pendingCrowbar !== null;
 
-  /** A pried tile was dropped on the window or the queue. The lift itself
-   *  lands it in the window (held); a queue drop then parks it in the same
-   *  gesture — unless parking is illegal (full queue), in which case it stays
-   *  in the window and the routing hint explains. */
-  const onPry = (cell: number, dest: "window" | "queue") => {
+  /** A pried tile was dropped on the window, the queue, or an empty cell.
+   *  The lift itself lands it in the window (held); a queue drop then parks
+   *  it in the same gesture — unless parking is illegal (full queue), in
+   *  which case it stays in the window and the routing hint explains — and a
+   *  cell drop places it there, relocating the tile in one drag. */
+  const onPry = (cell: number, dest: DropTarget) => {
     if (pendingCrowbar === null) return;
     playCrowbar(pendingCrowbar, asCellIndex(cell));
-    if (dest === "queue" && legalActions(useGame.getState().state).canPark) {
+    if (dest.kind === "queue" && legalActions(useGame.getState().state).canPark) {
       dispatch({ type: "PARK" });
+    }
+    if (dest.kind === "cell") {
+      dispatch({ type: "PLACE", cell: dest.cell });
     }
   };
 

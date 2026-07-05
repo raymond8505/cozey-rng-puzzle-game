@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { useGame, NO_EFFECT_EJECT_MS } from "./store";
+import { asCellIndex } from "@/game/types";
 import { PUZZLES } from "./puzzles";
 import { edgeSignature } from "@/fixtures/game.fixture";
 import { GAME_CONFIG } from "@/config/game.config";
@@ -145,6 +146,29 @@ describe("seated card lifecycle", () => {
   });
 });
 
+// The armed pry's cell-drop branch (GameScreen.onPry): lift then place as two
+// dispatches in one gesture — the tile relocates without a window round-trip.
+describe("crowbar relocate", () => {
+  it("lifts and places in one gesture, ending the turn", () => {
+    useGame.getState().restart("relocate-test");
+    useGame.getState().dispatch({ type: "DRAW" });
+    const piece = useGame.getState().state.held!.piece;
+    useGame.getState().dispatch({ type: "PLACE", cell: asCellIndex(0) });
+
+    useGame.getState().devAddCard("crowbar");
+    const id = useGame.getState().state.hand.at(-1)!.instanceId;
+    useGame.getState().armCrowbar(id);
+    useGame.getState().playCrowbar(id, asCellIndex(0));
+    useGame.getState().dispatch({ type: "PLACE", cell: asCellIndex(5) });
+
+    const after = useGame.getState().state;
+    expect(after.board[0]).toBeNull();
+    expect(after.board[5]).toBe(piece);
+    expect(after.held).toBeNull();
+    expect(after.phase).toBe("idle");
+  });
+});
+
 // The status log is the single feedback surface: card plays, outcomes, and
 // hints all append here, capped, and reset with the game they narrate.
 describe("status log", () => {
@@ -156,7 +180,7 @@ describe("status log", () => {
     expect(useGame.getState().log.map((l) => l.text)).toEqual([
       "Draw a tile.",
       "Card Inserted: Crowbar.",
-      "Drag a tile off the board — into the window or the queue — to pry it loose.",
+      "Drag a tile off the board — into the window, the tray, or an empty spot — to pry it loose.",
     ]);
   });
 
@@ -179,7 +203,7 @@ describe("status log", () => {
     const log = useGame.getState().log;
     expect(log).toHaveLength(LOG_CAP);
     expect(log.at(-1)?.text).toBe(
-      "Drag a tile off the board — into the window or the queue — to pry it loose.",
+      "Drag a tile off the board — into the window, the tray, or an empty spot — to pry it loose.",
     );
     // ids stay unique after trimming (they never reset)
     expect(new Set(log.map((l) => l.id)).size).toBe(LOG_CAP);

@@ -8,7 +8,7 @@ import { UNIT } from "./piecePath";
 import { PieceView } from "./PieceView";
 import { EmptyCell } from "./EmptyCell";
 import { PieceSprite } from "../piece/PieceSprite";
-import { resolveDropAt } from "../dnd/resolveDrop";
+import { resolveDropAt, type DropTarget } from "../dnd/resolveDrop";
 import { clientXY } from "../dnd/pointer";
 
 interface BoardProps {
@@ -16,10 +16,10 @@ interface BoardProps {
   /** When true, empty cells become drag-drop targets (data-drop="cell:i"). */
   dropActive?: boolean;
   /** Armed crowbar: placed tiles grow drag ghosts that pry them off the board
-   *  when dropped on the machine window or the queue. Tiles are always
-   *  dragged — there is no click-to-pry. */
+   *  when dropped on the machine window, the queue, or an empty cell (a
+   *  one-drag relocate). Tiles are always dragged — there is no click-to-pry. */
   pryActive?: boolean;
-  onPry?: (cell: number, dest: "window" | "queue") => void;
+  onPry?: (cell: number, dest: DropTarget) => void;
 }
 
 /** Matches PieceSprite's default `pad`: the ghost expands past its cell by
@@ -51,9 +51,9 @@ export function Board({
     (cell: number) => (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       setLifting(null);
       const target = resolveDropAt(...clientXY(e, info));
-      if (target?.kind === "window" || target?.kind === "queue") {
-        onPry?.(cell, target.kind);
-      } // anything else (board, slot, miss): snap back, tile stays put
+      if (target && target.kind !== "slot") {
+        onPry?.(cell, target);
+      } // slot or miss: snap back, tile stays put
     };
 
   return (
@@ -92,7 +92,11 @@ export function Board({
             />
           ))}
 
-          {dropActive &&
+          {/* Empty cells accept drops while routing/placing AND while prying:
+              a pried tile dropped straight on an empty cell relocates in one
+              drag (the tile's own cell is still occupied, so it grows no rect
+              and a same-cell drop snaps back). */}
+          {(dropActive || pryActive) &&
             state.board.map((occupant, cell) =>
               occupant !== null ? null : (
                 <rect

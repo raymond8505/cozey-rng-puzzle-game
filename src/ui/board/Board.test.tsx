@@ -27,8 +27,26 @@ describe("Board drag-to-pry", () => {
     const { container } = render(<Board state={state} pryActive />);
 
     expect(container.querySelectorAll(".pry-token")).toHaveLength(1);
-    // ghosts never carry a board drop token — a pried tile can't re-board
+    // ghosts are drag sources, never drop targets — empty cells carry the
+    // board drop tokens (below), not the ghosts themselves
     expect(container.querySelector(".pry-token[data-drop]")).toBeNull();
+  });
+
+  it("opens empty cells as drop targets while prying (one-drag relocate)", () => {
+    const state = statePlacedOne();
+    const { container } = render(<Board state={state} pryActive />);
+
+    // every empty cell accepts the pried tile; the occupied cell does not
+    const drops = container.querySelectorAll(".cell-drop[data-drop]");
+    expect(drops).toHaveLength(state.board.filter((c) => c === null).length);
+    const occupied = state.board.findIndex((c) => c !== null);
+    expect(container.querySelector(`[data-drop="cell:${occupied}"]`)).toBeNull();
+  });
+
+  it("keeps empty cells closed when neither routing nor prying", () => {
+    const state = statePlacedOne();
+    const { container } = render(<Board state={state} />);
+    expect(container.querySelector(".cell-drop")).toBeNull();
   });
 
   it("renders no pry layer at all when the crowbar isn't armed", () => {

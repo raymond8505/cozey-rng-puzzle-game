@@ -226,7 +226,7 @@ export const useGame = create<GameStore>((set) => {
           insertedLine("crowbar"),
           {
             tone: "info",
-            text: "Drag a tile off the board — into the window or the queue — to pry it loose.",
+            text: "Drag a tile off the board — into the window, the tray, or an empty spot — to pry it loose.",
           },
         ]),
       })),

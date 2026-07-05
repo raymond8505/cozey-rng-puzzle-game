@@ -57,7 +57,7 @@ export function Board({
     };
 
   return (
-    <div className={pryActive ? "board-frame prying" : "board-frame"}>
+    <div className="board-frame">
       {/* The stage is forced to the grid's exact ratio (width AND height
           capped together), so the svg fills it edge to edge and the HTML pry
           layer's percentage coordinates align with the svg cells. */}

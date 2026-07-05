@@ -56,6 +56,8 @@ describe("Machine chosen-piece window", () => {
     expect(win.classList.contains("chosen")).toBe(false);
     expect(win.querySelector(".held-token")).toBeNull();
     expect(screen.queryByText(/drag onto the board/i)).toBeNull();
+    // the parking tray lives on the machine now, between window and card slot
+    expect(container.querySelector(".parking-tray")).not.toBeNull();
   });
 });
 

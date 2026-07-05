@@ -241,10 +241,13 @@ export const useGame = create<GameStore>((set) => {
           { type: "PLAY_CROWBAR", instanceId, cell },
           (next) => (announced ? resultLines(next) : playLines("crowbar", next)),
         );
+        // Armed path: the pried tile just got chosen, so applyAction already
+        // ejected the seat — don't re-seat. Only the direct unarmed play
+        // (empty board, no-effect) seats here, on the dud eject timer.
         return {
           ...applied,
           pendingCrowbar: null,
-          ...seatCard("crowbar", applied.state),
+          ...(announced ? {} : seatCard("crowbar", applied.state)),
         };
       }),
 

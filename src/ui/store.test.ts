@@ -167,6 +167,21 @@ describe("crowbar relocate", () => {
     expect(after.held).toBeNull();
     expect(after.phase).toBe("idle");
   });
+
+  it("ejects the crowbar from the slot the moment the pry resolves", () => {
+    useGame.getState().restart("eject-on-pry");
+    useGame.getState().dispatch({ type: "DRAW" });
+    useGame.getState().dispatch({ type: "PLACE", cell: asCellIndex(0) });
+
+    useGame.getState().devAddCard("crowbar");
+    const id = useGame.getState().state.hand.at(-1)!.instanceId;
+    useGame.getState().armCrowbar(id);
+    expect(useGame.getState().seatedCard).toBe("crowbar");
+
+    // the drag completing IS the tile choice — the card's job is done
+    useGame.getState().playCrowbar(id, asCellIndex(0));
+    expect(useGame.getState().seatedCard).toBeNull();
+  });
 });
 
 // The status log is the single feedback surface: card plays, outcomes, and
